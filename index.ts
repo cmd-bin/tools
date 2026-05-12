@@ -17,45 +17,37 @@ export const cli = cac("cmd-kit");
 
 // --- Core Commands ---
 
-/**
- * Command: status
- * Simple health check for the toolkit and runtime environment.
- */
 cli
   .command("status", "Display the current status of cmd-kit")
   .action((): void => {
+    // Bun kontrolünü tip hatası almadan yapmak için globalThis kullanıyoruz
+    const isBun = "Bun" in globalThis;
     console.log(`✅ @cmd-kit/react-native is active.`);
     console.log(`🚀 Version: ${VERSION}`);
-    console.log(`🛠️ Runtime: ${typeof Bun !== "undefined" ? "Bun" : "Node/Deno"}`);
+    console.log(`🛠️ Runtime: ${isBun ? "Bun" : "Node/Deno"}`);
   });
 
-/**
- * Global CLI configuration.
- */
 cli.help();
 cli.version(VERSION);
 
 /**
  * Main execution function.
- * @param args - Command line arguments (defaults to process.argv)
  */
-export function run(args: string[] = process.argv): void {
+export function run(args: string[] = (globalThis as any).process?.argv ?? []): void {
   try {
-    // CAC .parse() metodunu çağırarak komutları işler
     cli.parse(args);
   } catch (error) {
     console.error(`❌ Error: ${(error as Error).message}`);
-    process.exit(1);
+    (globalThis as any).process?.exit(1);
   }
 }
 
 /**
- * Entry point for direct execution (e.g., npx/bunx).
+ * Entry point guard for direct execution.
  */
 if (
-  (typeof process !== "undefined" && process.argv[1]?.includes("cmd-kit")) || 
-  // @ts-ignore: Bun specific check
-  (typeof import.meta.main !== "undefined" && import.meta.main)
+  ((globalThis as any).process?.argv[1]?.includes("cmd-kit")) || 
+  (import.meta as any).main
 ) {
   run();
 }
