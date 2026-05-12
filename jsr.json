@@ -5,7 +5,9 @@
   "exports": "./index.ts",
   "publish": {
     "exclude": [
-      ".github"
+      ".github",
+      "package-lock.json",
+      "package.json"
     ],
     "bin": "./index.ts"
   },
