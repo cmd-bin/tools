@@ -1,9 +1,9 @@
 name: Publish
-on: 
-  workflow_call
-  # push:
-  #   branches:
-  #     - main
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   publish:
@@ -13,6 +13,19 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v6
-      - run: npm ci 
-      - name: Publish package
+      
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false  # never use caching in release builds
+
+      - run: npm ci
+      
+      # JSR'a Yayınla
+      - name: Publish to JSR
         run: npx jsr publish
+
+      # npm'e Yayınla (Direct TS)
+      - name: Publish to npm
+        run: npm publish --provenance --access public

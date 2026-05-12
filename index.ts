@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
  * @cmd-bin/react-native - Lean CLI core for React Native development.
  *
