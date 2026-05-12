@@ -3,7 +3,7 @@
  * @cmd-kit/react-native - Lean CLI core for React Native development.
  */
 
-import { cac } from "cac";
+import { cac, type CAC } from "cac";
 
 /**
  * Current version of the toolkit.
@@ -13,7 +13,7 @@ export const VERSION: string = "0.0.1";
 /**
  * Main CLI instance using CAC.
  */
-export const cli = cac("cmd-kit");
+export const cli: CAC = cac("cmd-kit");
 
 // --- Core Commands ---
 
