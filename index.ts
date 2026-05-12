@@ -30,30 +30,42 @@
  */
 
 import { cac, type CAC } from "cac";
+import pkg from "./package.json" with { type: "json" };
 
 /**
  * The current semantic version of the toolkit.
  */
-export const VERSION: string = "0.0.3";
+export const VERSION: string = pkg.version;
 
 /**
  * The main CAC instance used to define and manage CLI commands.
  */
-export const cli: CAC = cac("cmd-bin");
+export const cli: CAC = cac(pkg.name);
+
+const global: any = (globalThis as any);
+const runtime: string = global["Deno"]?.args ? "Deno" : global["Bun"]?.argv ? "Bun" : "Node";
+const runtimeTimeArgs: string[] = (global["Deno"]?.args && [global["Deno"].execPath(), global["Deno"].mainModule, ...global["Deno"]?.args]) ?? global["Bun"]?.argv ?? global["process"]?.argv ?? [];
 
 // --- Core Commands ---
 
 cli
-  .command("status", "Display the current status of cmd-bin")
+  .command("status", `Display the current status of ${pkg.name}`)
   .action((): void => {
-    // Determine runtime without type errors
-    const isBun = "Bun" in globalThis;
-    console.log(`✅ @cmd-bin/react-native is active.`);
+    console.log(`✅ ${pkg.name} is active.`);
     console.log(`🚀 Version: ${VERSION}`);
-    console.log(`🛠️ Runtime: ${isBun ? "Bun" : "Node/Deno"}`);
+    console.log(`🛠️ Runtime: ${runtime}`);
   });
 
-cli.help();
+cli.help((sections) => {
+  sections.push({
+    title: "Examples",
+    body: `  $ npx ${pkg.name} status
+  $ bunx ${pkg.name} status
+  $ deno x jsr:${pkg.name} status`,
+  });
+});
+
+cli.usage("<command> [options]");
 cli.version(VERSION);
 
 /**
@@ -66,21 +78,18 @@ cli.version(VERSION);
  * run(["node", "index.ts", "status"]);
  * ```
  */
-export function run(args: string[] = (globalThis as any).process?.argv ?? []): void {
+export function run(args: string[] = runtimeTimeArgs): void {
   try {
     cli.parse(args);
   } catch (error) {
     console.error(`❌ Error: ${(error as Error).message}`);
-    (globalThis as any).process?.exit(1);
+    process?.exit(1);
   }
 }
 
 /**
  * Entry point guard for direct execution.
  */
-if (
-  ((globalThis as any).process?.argv[1]?.includes("cmd-bin")) ||
-  (import.meta as any).main
-) {
+if (import.meta.main) {
   run();
 }

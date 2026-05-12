@@ -13,16 +13,21 @@ runtime.
 ### Using Bun
 
 ```bash
-bunx --bun @cmd-bin/react-native status
+bunx @cmd-bin/react-native status
 ```
 
 ### Using Deno
+
+```bash
+deno x @cmd-bin/react-native status
+```
 
 ```bash
 deno x jsr:@cmd-bin/react-native status
 ```
 
 ### Using Node.js
+
 ```bash
 npx @cmd-bin/react-native status
 ```
