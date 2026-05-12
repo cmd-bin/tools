@@ -31,7 +31,15 @@ cli.help();
 cli.version(VERSION);
 
 /**
- * Main execution function.
+ * Main execution function for the CLI.
+ * 
+ * @param args - Command line arguments to parse. Defaults to process.argv.
+ * 
+ * @example
+ * ```ts
+ * // Run with custom arguments
+ * run(["node", "bin.js", "status"]);
+ * ```
  */
 export function run(args: string[] = (globalThis as any).process?.argv ?? []): void {
   try {
