@@ -1,28 +1,53 @@
 /**
+ * @cmd-bin/react-native - Lean CLI core for React Native development.
+ *
+ * This module provides the core infrastructure for the Command Kit toolkit.
+ * It includes environment detection, status reporting, and a command-line 
+ * interface powered by CAC.
+ *
+ * @example CLI Usage
+ * ```bash
+ * # Run via npx
+ * npx jsr @cmd-bin/react-native status
+ *
+ * # Run via Bun
+ * bunx jsr @cmd-bin/react-native status
+ *
+ * # Run via Deno
+ * deno run -A jsr:@cmd-bin/react-native status
+ * ```
+ *
+ * @example API Usage
+ * ```ts
+ * import { run } from "@cmd-bin/react-native";
+ * 
+ * // Execute the CLI with custom arguments
+ * run(["node", "bin.js", "status"]);
+ * ```
+ *
  * @module
- * @cmd-kit/react-native - Lean CLI core for React Native development.
  */
 
 import { cac, type CAC } from "cac";
 
 /**
- * Current version of the toolkit.
+ * The current semantic version of the toolkit.
  */
-export const VERSION: string = "0.0.2";
+export const VERSION: string = "0.0.1";
 
 /**
- * Main CLI instance using CAC.
+ * The main CAC instance used to define and manage CLI commands.
  */
-export const cli: CAC = cac("cmd-kit");
+export const cli: CAC = cac("cmd-bin");
 
 // --- Core Commands ---
 
 cli
-  .command("status", "Display the current status of cmd-kit")
+  .command("status", "Display the current status of cmd-bin")
   .action((): void => {
-    // Bun kontrolünü tip hatası almadan yapmak için globalThis kullanıyoruz
+    // Determine runtime without type errors
     const isBun = "Bun" in globalThis;
-    console.log(`✅ @cmd-kit/react-native is active.`);
+    console.log(`✅ @cmd-bin/react-native is active.`);
     console.log(`🚀 Version: ${VERSION}`);
     console.log(`🛠️ Runtime: ${isBun ? "Bun" : "Node/Deno"}`);
   });
@@ -33,12 +58,11 @@ cli.version(VERSION);
 /**
  * Main execution function for the CLI.
  * 
- * @param args - Command line arguments to parse. Defaults to process.argv.
+ * @param args - Command line arguments to parse. Defaults to `process.argv`.
  * 
  * @example
  * ```ts
- * // Run with custom arguments
- * run(["node", "bin.js", "status"]);
+ * run(["node", "index.ts", "status"]);
  * ```
  */
 export function run(args: string[] = (globalThis as any).process?.argv ?? []): void {
@@ -54,7 +78,7 @@ export function run(args: string[] = (globalThis as any).process?.argv ?? []): v
  * Entry point guard for direct execution.
  */
 if (
-  ((globalThis as any).process?.argv[1]?.includes("cmd-kit")) ||
+  ((globalThis as any).process?.argv[1]?.includes("cmd-bin")) ||
   (import.meta as any).main
 ) {
   run();

@@ -1,6 +1,6 @@
 {
-  "name": "@cmd-kit/react-native",
-  "version": "0.0.2",
+  "name": "@cmd-bin/react-native",
+  "version": "0.0.1",
   "license": "Apache-2.0",
   "type": "module",
   "bin": "./index.ts",
