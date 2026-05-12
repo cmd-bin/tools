@@ -4,7 +4,8 @@
   "license": "Apache-2.0",
   "exports": "./index.ts",
   "publish": {
-    "exclude": [".github"]
+    "exclude": [".github"],
+    "bin": "./index.ts"
   },
   "imports": {
     "cac": "npm:cac@^6.7.14"
