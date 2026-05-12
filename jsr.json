@@ -5,11 +5,8 @@
   "exports": "./index.ts",
   "publish": {
     "exclude": [
-      ".github",
-      "package-lock.json",
-      "package.json"
-    ],
-    "bin": "./index.ts"
+      ".github"
+    ]
   },
   "imports": {
     "cac": "npm:cac@^6.7.14"
