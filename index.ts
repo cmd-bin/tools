@@ -8,7 +8,7 @@ import { cac, type CAC } from "cac";
 /**
  * Current version of the toolkit.
  */
-export const VERSION: string = "0.0.1";
+export const VERSION: string = "0.0.2";
 
 /**
  * Main CLI instance using CAC.
@@ -54,7 +54,7 @@ export function run(args: string[] = (globalThis as any).process?.argv ?? []): v
  * Entry point guard for direct execution.
  */
 if (
-  ((globalThis as any).process?.argv[1]?.includes("cmd-kit")) || 
+  ((globalThis as any).process?.argv[1]?.includes("cmd-kit")) ||
   (import.meta as any).main
 ) {
   run();
