@@ -34,7 +34,7 @@ import { cac, type CAC } from "cac";
 /**
  * The current semantic version of the toolkit.
  */
-export const VERSION: string = "0.0.2";
+export const VERSION: string = "0.0.3";
 
 /**
  * The main CAC instance used to define and manage CLI commands.

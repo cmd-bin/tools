@@ -1,11 +1,14 @@
 {
   "name": "@cmd-bin/react-native",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "license": "Apache-2.0",
   "exports": "./index.ts",
   "publish": {
     "exclude": [
-      ".github"
+      ".github",
+      "dist",
+      "tsconfig.json",
+      "package-lock.json"
     ]
   },
   "imports": {
