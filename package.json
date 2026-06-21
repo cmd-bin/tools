@@ -1,6 +1,6 @@
 {
   "name": "@cmd-bin/react-native",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "license": "Apache-2.0",
   "type": "module",
   "engines": {
@@ -14,12 +14,12 @@
     "build": "tsc"
   },
   "dependencies": {
-    "cac": "^6.7.14",
+    "cac": "^7.0.0",
     "dotenv": "^17.4.2",
     "picocolors": "^1.1.1"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
-    "typescript": "^5.4.5"
+    "typescript": "^6.0.3"
   }
 }

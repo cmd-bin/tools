@@ -31,11 +31,11 @@
 
 import pc from "picocolors";
 import { cac, type CAC } from "cac";
-import { getRuntimeTimeArgs } from "./commands/runtime";
-import { status } from "./commands/status";
-import { build } from "./commands/build";
-import { bundle } from "./commands/bundle";
-import { clean } from "./commands/clean";
+import { getRuntimeTimeArgs } from "./commands/runtime/index";
+import { status } from "./commands/status/index";
+import { build } from "./commands/build/index";
+import { bundle } from "./commands/bundle/index";
+import { clean } from "./commands/clean/index";
 import pkg from "./package.json" with { type: "json" };
 
 /**
