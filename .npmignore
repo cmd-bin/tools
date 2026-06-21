@@ -1,7 +1,7 @@
 .github
-fastlane/report.xml
-fastlane/Readme.md
-commands
-index.ts
-jsr.json
-tsconfig.json
+/fastlane/report.xml
+/fastlane/Readme.md
+/commands
+/index.ts
+/jsr.json
+/tsconfig.json
