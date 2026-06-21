@@ -1,14 +1,19 @@
 {
   "name": "@cmd-bin/react-native",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "license": "Apache-2.0",
   "type": "module",
-  "bin": "./index.ts",
+  "engines": {
+    "node": ">=24"
+  },
+  "bin": {
+    "react-native": "index.ts"
+  },
   "repository": {
     "url": "git+https://github.com/cmd-bin/react-native.git"
   },
   "scripts": {
-    "build": "tsup index.ts --format esm --dts --clean"
+    "build": "tsc"
   },
   "dependencies": {
     "cac": "^6.7.14",
@@ -17,7 +22,6 @@
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
-    "tsup": "^8.5.1",
     "typescript": "^5.4.5"
   }
 }

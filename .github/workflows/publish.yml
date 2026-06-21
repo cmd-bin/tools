@@ -26,13 +26,8 @@ jobs:
       - name: Publish to JSR
         run: npx jsr publish
 
-      # npm için Derle ve Yayınla (JavaScript)
-      - name: Build and Publish to npm
-        run: |
-          npm run build
-          # npm yayını için bin, main ve types alanlarını güncelle
-          node -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json','utf8')); pkg.bin='./dist/index.js'; pkg.main='./dist/index.js'; pkg.types='./dist/index.d.ts'; fs.writeFileSync('package.json',JSON.stringify(pkg,null,2));"
-          npm pkg fix
-          npm publish --provenance --access public
+      # npm için Yayınla (Saf TypeScript - Node 24+)
+      - name: Publish to npm
+        run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
