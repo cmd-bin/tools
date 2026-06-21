@@ -10,22 +10,21 @@ const __dirname = path.dirname(__filename);
 const callerWorkspace = process.cwd();
 const fastlaneDir = path.resolve(__dirname, "..", "..", "fastlane");
 
-const execOptions = { cwd: callerWorkspace };
-const remoteOriginUrl = execSync(
-  "git config --get remote.origin.url",
-  execOptions,
-)
-  .toString()
-  .trim();
-const currentBranch = execSync("git rev-parse --abbrev-ref HEAD", execOptions)
-  .toString()
-  .trim();
-
-const githubRepositoryMatch = remoteOriginUrl.match(githubRepoPattern)?.[1];
-
 const envCache = new Map();
 
 export function getWorkspaceEnv(options: Record<string, unknown> = {}) {
+  const execOptions = { cwd: callerWorkspace };
+  const remoteOriginUrl = execSync(
+    "git config --get remote.origin.url",
+    execOptions,
+  )
+    .toString()
+    .trim();
+  const currentBranch = execSync("git rev-parse --abbrev-ref HEAD", execOptions)
+    .toString()
+    .trim();
+
+  const githubRepositoryMatch = remoteOriginUrl.match(githubRepoPattern)?.[1];
   const cacheKey = JSON.stringify(options);
   if (envCache.has(cacheKey)) {
     return envCache.get(cacheKey);
