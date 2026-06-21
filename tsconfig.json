@@ -5,6 +5,7 @@
     "moduleResolution": "nodenext",
     "declaration": true,
     "allowImportingTsExtensions": true,
+    "noEmit": true,
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
