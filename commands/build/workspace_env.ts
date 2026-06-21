@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const callerWorkspace = process.cwd();
-const fastlaneDir = path.resolve(__dirname, "..", "fastlane");
+const fastlaneDir = path.resolve(__dirname, "..", "..", "fastlane");
 
 const envCache = new Map();
 
