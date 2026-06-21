@@ -1,6 +1,6 @@
 {
   "name": "@cmd-bin/react-native",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "license": "Apache-2.0",
   "type": "module",
   "engines": {
@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
-    "typescript": "^6.0.3"
+    "tsup": "^8.5.1",
+    "typescript": "^5.4.5"
   }
 }

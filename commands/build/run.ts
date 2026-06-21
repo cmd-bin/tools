@@ -1,9 +1,9 @@
-import { getWorkspaceEnv } from "./workspace_env";
-import { spawnProcess, registerProcessSignals } from "./utils/process";
+import { getWorkspaceEnv } from "../workspace_env.js";
+import { spawnProcess, registerProcessSignals } from "./utils/process.js";
 import pc from "picocolors";
 import path from "node:path";
-import { IpcServer } from "./utils/ipc_server";
-import { startLog } from "./utils/logger";
+import { IpcServer } from "./utils/ipc_server.js";
+import { startLog } from "./utils/logger.js";
 
 export async function run(
   command: string,

@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * @cmd-bin/react-native - Lean CLI core for React Native development.
  *
@@ -31,11 +30,11 @@
 
 import pc from "picocolors";
 import { cac, type CAC } from "cac";
-import { getRuntimeTimeArgs } from "./commands/runtime/index";
-import { status } from "./commands/status/index";
-import { build } from "./commands/build/index";
-import { bundle } from "./commands/bundle/index";
-import { clean } from "./commands/clean/index";
+import { getRuntimeTimeArgs } from "./commands/runtime/index.js";
+import { status } from "./commands/status/index.js";
+import { build } from "./commands/build/index.js";
+import { bundle } from "./commands/bundle/index.js";
+import { clean } from "./commands/clean/index.js";
 import pkg from "./package.json" with { type: "json" };
 
 /**

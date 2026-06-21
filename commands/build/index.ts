@@ -1,6 +1,6 @@
-import { loadDeployEnv } from "./load_deploy_env";
-import { clearBuilds } from "./clear_builds";
-import { runCommand, runBundle } from "./run";
+import { loadDeployEnv } from "./load_deploy_env.js";
+import { clearBuilds } from "./clear_builds.js";
+import { runCommand } from "./run.js";
 import { type CAC } from "cac";
 
 export const build = (cli: CAC) => {

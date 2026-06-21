@@ -1,5 +1,5 @@
 import { type CAC } from "cac";
-import { clearBuilds } from "../build/clear_builds";
+import { clearBuilds } from "../build/clear_builds.js";
 
 export const clean = (cli: CAC) => {
   cli

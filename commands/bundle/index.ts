@@ -1,6 +1,6 @@
 import { type CAC } from "cac";
-import { loadDeployEnv } from "../build/load_deploy_env";
-import { runCommand, runBundle } from "../build/run";
+import { loadDeployEnv } from "../build/load_deploy_env.js";
+import { runCommand, runBundle } from "../build/run.js";
 
 export const bundle = (cli: CAC) => {
   cli
