@@ -1,6 +1,6 @@
 import { type CAC } from "cac";
-import { loadDeployEnv } from "../build/load_deploy_env.ts";
-import { runCommand, runBundle } from "../build/run.ts";
+import { loadDeployEnv } from "../build/load_deploy_env";
+import { runCommand, runBundle } from "../build/run";
 
 export const bundle = (cli: CAC) => {
   cli

@@ -1,5 +1,5 @@
 import pc from "picocolors";
-import { isCi } from "./process.ts";
+import { isCi } from "./process";
 
 export function animateDots(text: string) {
   let index = 0;

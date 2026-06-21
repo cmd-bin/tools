@@ -1,5 +1,5 @@
 import { type CAC } from "cac";
-import { getRuntime } from "../runtime/index.ts";
+import { getRuntime } from "../runtime/index";
 import pkg from "../../package.json" with { type: "json" };
 
 export const status = (cli: CAC) => {

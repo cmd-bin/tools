@@ -1,6 +1,6 @@
-import { loadDeployEnv } from "./load_deploy_env.ts";
-import { clearBuilds } from "./clear_builds.ts";
-import { runCommand, runBundle } from "./run.ts";
+import { loadDeployEnv } from "./load_deploy_env";
+import { clearBuilds } from "./clear_builds";
+import { runCommand, runBundle } from "./run";
 import { type CAC } from "cac";
 
 export const build = (cli: CAC) => {

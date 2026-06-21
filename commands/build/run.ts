@@ -1,9 +1,9 @@
-import { getWorkspaceEnv } from "./workspace_env.ts";
-import { spawnProcess, registerProcessSignals } from "./utils/process.ts";
+import { getWorkspaceEnv } from "./workspace_env";
+import { spawnProcess, registerProcessSignals } from "./utils/process";
 import pc from "picocolors";
 import path from "node:path";
-import { IpcServer } from "./utils/ipc_server.ts";
-import { startLog } from "./utils/logger.ts";
+import { IpcServer } from "./utils/ipc_server";
+import { startLog } from "./utils/logger";
 
 export async function run(
   command: string,
