@@ -3,7 +3,7 @@
  * @cmd-bin/react-native - Lean CLI core for React Native development.
  *
  * This module provides the core infrastructure for the Command Kit toolkit.
- * It includes environment detection, status reporting, and a command-line 
+ * It includes environment detection, status reporting, and a command-line
  * interface powered by CAC.
  *
  * @example CLI Usage
@@ -21,7 +21,7 @@
  * @example API Usage
  * ```ts
  * import { run } from "@cmd-bin/react-native";
- * 
+ *
  * // Execute the CLI with custom arguments
  * run(["node", "bin.js", "status"]);
  * ```
@@ -29,7 +29,13 @@
  * @module
  */
 
+import pc from "picocolors";
 import { cac, type CAC } from "cac";
+import { getRuntimeTimeArgs } from "./commands/runtime/index.ts";
+import { status } from "./commands/status/index.ts";
+import { build } from "./commands/build/index.ts";
+import { bundle } from "./commands/bundle/index.ts";
+import { clean } from "./commands/clean/index.ts";
 import pkg from "./package.json" with { type: "json" };
 
 /**
@@ -41,20 +47,13 @@ export const VERSION: string = pkg.version;
  * The main CAC instance used to define and manage CLI commands.
  */
 export const cli: CAC = cac(pkg.name);
-
-const global: any = (globalThis as any);
-const runtime: string = global["Deno"]?.args ? "Deno" : global["Bun"]?.argv ? "Bun" : "Node";
-const runtimeTimeArgs: string[] = (global["Deno"]?.args && [global["Deno"].execPath(), global["Deno"].mainModule, ...global["Deno"]?.args]) ?? global["Bun"]?.argv ?? global["process"]?.argv ?? [];
+cli.version(VERSION);
 
 // --- Core Commands ---
-
-cli
-  .command("status", `Display the current status of ${pkg.name}`)
-  .action((): void => {
-    console.log(`✅ ${pkg.name} is active.`);
-    console.log(`🚀 Version: ${VERSION}`);
-    console.log(`🛠️ Runtime: ${runtime}`);
-  });
+status(cli);
+build(cli);
+bundle(cli);
+clean(cli);
 
 cli.help((sections) => {
   sections.push({
@@ -66,19 +65,18 @@ cli.help((sections) => {
 });
 
 cli.usage("<command> [options]");
-cli.version(VERSION);
 
 /**
  * Main execution function for the CLI.
- * 
+ *
  * @param args - Command line arguments to parse. Defaults to `process.argv`.
- * 
+ *
  * @example
  * ```ts
  * run(["node", "index.ts", "status"]);
  * ```
  */
-export function run(args: string[] = runtimeTimeArgs): void {
+export function run(args: string[]): void {
   try {
     cli.parse(args);
   } catch (error) {
@@ -91,5 +89,8 @@ export function run(args: string[] = runtimeTimeArgs): void {
  * Entry point guard for direct execution.
  */
 if (import.meta.main) {
-  run();
+  process.on("exit", (code) => {
+    if (code === 1) console.log(pc.dim(`👋  ${pc.italic("Exiting...")}`));
+  });
+  run(getRuntimeTimeArgs());
 }
