@@ -41,12 +41,12 @@ import pkg from "./package.json" with { type: "json" };
 /**
  * The current semantic version of the toolkit.
  */
-export const VERSION: string = pkg.version;
+const VERSION: string = pkg.version;
 
 /**
  * The main CAC instance used to define and manage CLI commands.
  */
-export const cli: CAC = cac(pkg.name);
+const cli: CAC = cac(pkg.name);
 cli.version(VERSION);
 
 // --- Core Commands ---
@@ -76,7 +76,7 @@ cli.usage("<command> [options]");
  * run(["node", "index.ts", "status"]);
  * ```
  */
-export function run(args: string[]): void {
+function run(args: string[]): void {
   try {
     cli.parse(args);
   } catch (error) {

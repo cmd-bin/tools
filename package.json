@@ -11,7 +11,7 @@
     "url": "git+https://github.com/cmd-bin/react-native.git"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsdown"
   },
   "dependencies": {
     "cac": "^7.0.0",
@@ -21,6 +21,7 @@
   "devDependencies": {
     "@semantic-release/exec": "^7.1.0",
     "@types/node": "^24.0.0",
+    "tsdown": "^0.22.3",
     "tsup": "^8.5.1",
     "typescript": "^5.4.5"
   }

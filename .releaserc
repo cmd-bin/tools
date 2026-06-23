@@ -12,7 +12,7 @@
       [
         "@semantic-release/exec",
         {
-          "prepareCmd": "npm run build && node -e \"const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json','utf8')); pkg.bin='./dist/index.js'; pkg.main='./dist/index.js'; pkg.types='./dist/index.d.ts'; fs.writeFileSync('package.json',JSON.stringify(pkg,null,2));\" && npm pkg fix"
+          "prepareCmd": "node -e \"const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json','utf8')); pkg.bin='./dist/index.js'; pkg.version='${nextRelease.version}';pkg.main='./dist/index.js'; pkg.types='./dist/index.d.ts'; fs.writeFileSync('package.json',JSON.stringify(pkg,null,2));\" && npm run build &&  npm pkg fix"
         }
       ],
       "@semantic-release/npm",
