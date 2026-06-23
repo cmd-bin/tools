@@ -1,33 +1,6 @@
-import pc from "picocolors";
-import { isCi } from "./process.js";
+import { spinner, log } from "@clack/prompts";
 
-export function animateDots(text: string) {
-  let index = 0;
-  const pattern = [0, 1, 2, 3, 2, 1];
-
-  const interval = setInterval(() => {
-    index = (index + 1) % pattern.length;
-    const timeString = new Date().toTimeString().split(" ")[0];
-    process.stdout.write(
-      `\r\x1b[K${pc.dim(pc.gray(`(${timeString})`))} ${pc.bold(pc.yellow(text + ".".repeat(pattern[index])))}`,
-    );
-  }, 1000 / 6);
-  const timeString = new Date().toTimeString().split(" ")[0];
-  process.stdout.write(
-    `\r\x1b[K${pc.dim(pc.gray(`(${timeString})`))} ${pc.bold(pc.yellow(text))}`,
-  );
-
-  return (finished = true) => {
-    clearInterval(interval);
-    process.stdout.write("\r\x1b[K");
-    if (!finished) {
-      const timeString = new Date().toTimeString().split(" ")[0];
-      process.stdout.write(
-        `\r\x1b[K${pc.dim(pc.gray(`(${timeString})`))} ${pc.bold(pc.yellow(text) + pc.red(" (INTERRUPTED)"))}\n`,
-      );
-    }
-  };
-}
+const Spinner = spinner();
 
 export function formatDuration(ms: number) {
   const roundedMs = Math.round(ms);
@@ -41,17 +14,14 @@ export function formatDuration(ms: number) {
 }
 
 export function startLog(text: string, isNoLogs: boolean) {
-  const startTime = performance.now();
-  const stopFn =
-    isNoLogs && !isCi()
-      ? animateDots(text)
-      : (() => {
-          console.log(pc.bold(pc.yellow(`${text}...`)));
-          return () => {};
-        })();
+  Spinner.start(text);
 
-  return (finished = true) => {
-    stopFn(finished);
-    return formatDuration(performance.now() - startTime);
+  return () => {
+    return [
+      (stopText: string = text) => {
+        Spinner.stop(stopText);
+      },
+      Spinner,
+    ] as const;
   };
 }

@@ -5,7 +5,13 @@ import fs from "node:fs";
 import pc from "picocolors";
 import { EventEmitter } from "node:events";
 import crypto from "node:crypto";
+import { spinner, log } from "@clack/prompts";
+// import { p, proggressStep } from "../run.js";
 
+export const S = spinner({
+  indicator: "dots",
+  cancelMessage: "",
+});
 type Message = {
   event: string;
   payload?: Record<string, unknown>;
@@ -13,20 +19,27 @@ type Message = {
 
 const defaultMessageLogger = (msg: Message, group = "Fastlane") => {
   if (msg.event) {
-    process.stdout.write("\r\x1b[K");
     const timeString = new Date().toTimeString().split(" ")[0];
-    console.log(
-      `${pc.dim(pc.gray(`(${timeString})`))} ${pc.cyan(`⚡  [${group}]:`)} ${pc.white(msg.event)}`,
-    );
-    if (msg.payload && Object.keys(msg.payload).length > 0) {
-      for (const [key, value] of Object.entries(msg.payload)) {
-        const valStr =
-          typeof value === "object" ? JSON.stringify(value) : value;
-        console.log(
-          `${" ".repeat(16)}${pc.dim(key.padEnd(10, " ") + ":")} ${valStr}`,
-        );
-      }
+    const message = `${pc.dim(pc.gray(`(${timeString})`))} ${pc.cyan(`⚡  [${group}]:`)} ${pc.white(msg.event)}`;
+    if (msg.payload?.start) {
+      S.start(message);
+    } else if (msg.payload?.end) {
+      S.stop(message);
+    } else {
+      S.message(message);
     }
+    // lastMessage = `${pc.dim(pc.gray(`(${timeString})`))} ${pc.cyan(`⚡  [${group}]:`)} ${pc.white(msg.event)}`;
+    // S.start(lastMessage);
+
+    // if (msg.payload && Object.keys(msg.payload).length > 0) {
+    //   for (const [key, value] of Object.entries(msg.payload)) {
+    //     const valStr =
+    //       typeof value === "object" ? JSON.stringify(value) : value;
+    //     log.info(
+    //       `${" ".repeat(16)}${pc.dim(key.padEnd(10, " ") + ":")} ${valStr}`,
+    //     );
+    //   }
+    // }
   }
 };
 

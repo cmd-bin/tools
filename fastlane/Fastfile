@@ -13,11 +13,6 @@ XCODEBUILD_FORMATTER    = 'xcbeautify --renderer github-actions'
 
 default_platform(:ios)
 
-before_all do |lane|
-  pre_script = ConfigHelper.optional_env("BEFORE_ALL", default: nil)
-  sh(pre_script) if pre_script
-end
-
 after_all do |lane|
   cleanup
 end
@@ -26,22 +21,28 @@ platform :ios do
   desc "Push a new build to TestFlight"
 
   before_all do |lane|
+    pre_script = ConfigHelper.optional_env("BEFORE_ALL", default: nil)
+    sh(pre_script) if pre_script
     Dir.chdir(ENV['CALLER_WORKSPACE']) do
+      # "npm ls" başarılıysa (0 dönerse) sistem zaten güncel demektir.
+      IpcClient.send_event("Node modules are checking", { id: 0, start: true })
       if system("npm ls > /dev/null 2>&1")
-        IpcClient.send_event("Node modules are up to date")
+        IpcClient.send_event("Node modules are up to date", { id: 0, end: true })
       else
-        IpcClient.send_event("Installing node modules")
+        IpcClient.send_event("Node modules are installing", { id: 0 })
         sh("npm ci")
+        IpcClient.send_event("Node modules are installed", { id: 0, end: true })
       end
     end
-
     if lane != :pod
       Dir.chdir(File.join(ENV['CALLER_WORKSPACE'], "ios")) do
+        IpcClient.send_event("Pods are checking", { start: true })
         if system("cmp -s Podfile.lock Pods/Manifest.lock")
-          IpcClient.send_event("Pods are up to date")
+          IpcClient.send_event("Pods are up to date", { end: true })
         else
-          IpcClient.send_event("Installing pods")
+          IpcClient.send_event("Pods are installing")
           sh("bundle exec pod install")
+          IpcClient.send_event("Pods are installed", { end: true })
         end
       end
     end
@@ -76,16 +77,17 @@ platform :ios do
 
     app_target   = result[:targets].find { |t| t[:bundle_id] == config[:app_identifier] }
     version      = get_version_number(xcodeproj: config[:project], target: app_target[:name])
-    IpcClient.send_event("Building: v#{version}(#{build_number})")
 
+    IpcClient.send_event("Creating Archive: v#{version}(#{build_number})", {start: true})
     archive_result = create_archive(export_method: config[:export_method])
-    IpcClient.send_event("Created Archive")
+    IpcClient.send_event("Created Archive: v#{version}(#{build_number})", {end: true})
 
+    IpcClient.send_event("Creating IPA: v#{version}(#{build_number})", {start: true})
     ipa_result = create_ipa(
       export_method: config[:export_method],
       archive_path: archive_result[:archive_path]
     )
-    IpcClient.send_event("Created IPA")
+    IpcClient.send_event("Created IPA: v#{version}(#{build_number})", {end: true})
 
     FileHelper.zip_folder(
       input_dir_path: config[:lane_output_directory],
@@ -104,6 +106,7 @@ platform :ios do
 
     github_release = nil
     if ENV["GITHUB_TOKEN"] && !ENV["GITHUB_TOKEN"].empty?
+      IpcClient.send_event("Creating Github Release", { start: true })
       github_release = GithubHelper.create_release(
         platform: :ios,
         build_environment: config[:build_environment],
@@ -112,14 +115,14 @@ platform :ios do
         release_notes: release_notes,
         upload_assets: [config[:zip_asset_path]]
       )
-      IpcClient.send_event("Created Github Release", { url: github_release["html_url"] })
+      IpcClient.send_event("Created Github Release", { end: true, url: github_release["html_url"] })
     end
 
     testflight_params = {
       ipa: ipa_result[:path],
       api_key: api_key,
       app_identifier: config[:app_identifier],
-      # If set to true, the distribute_external option won't work and no build will be distributed to testers. 
+      # If set to true, the distribute_external option won't work and no build will be distributed to testers.
       # (You might want to use this option if you are using this action on CI and have to pay for 'minutes used' on your CI plan).
       # If set to true and a changelog is provided, it will partially wait for the build to appear on AppStore Connect
       # so the changelog can be set, and skip the remaining processing steps
@@ -133,8 +136,9 @@ platform :ios do
       }"
     end
 
+    IpcClient.send_event("Uploading to Testflight", {start: true})
     upload_to_testflight(testflight_params)
-    IpcClient.send_event("Uploaded to Testflight")
+    IpcClient.send_event("Uploaded to Testflight", {end:true})
 
     clean_build_artifacts if ENV["CI"]
   end
@@ -161,16 +165,18 @@ platform :ios do
 
     app_target   = result[:targets].find { |t| t[:bundle_id] == config[:app_identifier] }
     version      = get_version_number(xcodeproj: config[:project], target: app_target[:name])
-    IpcClient.send_event("Building: v#{version}(#{build_number})")
 
+    IpcClient.send_event("Creating Archive: v#{version}(#{build_number})", {start: true})
     archive_result = create_archive(export_method: config[:export_method])
-    IpcClient.send_event("Created Archive")
+    IpcClient.send_event("Created Archive: v#{version}(#{build_number})", {end: true})
 
+
+    IpcClient.send_event("Creating IPA", {start: true})
     ipa_result = create_ipa(
       export_method: config[:export_method],
       archive_path: archive_result[:archive_path]
     )
-    IpcClient.send_event("Created IPA")
+    IpcClient.send_event("Created IPA", {end: true})
 
     FileHelper.zip_folder(
       input_dir_path: config[:lane_output_directory],
@@ -190,6 +196,7 @@ platform :ios do
 
     github_release = nil
     if ENV["GITHUB_TOKEN"] && !ENV["GITHUB_TOKEN"].empty?
+      IpcClient.send_event("Creating Github Release", {start: true})
       github_release = GithubHelper.create_release(
         platform: :ios,
         build_environment: config[:build_environment],
@@ -198,12 +205,13 @@ platform :ios do
         release_notes: release_notes,
         upload_assets: [config[:zip_asset_path]]
       )
-      IpcClient.send_event("Created Github Release", { url: github_release["html_url"] })
+      IpcClient.send_event("Created Github Release", {end: true, url: github_release["html_url"]})
     end
 
     release_notes_with_github = "#{release_notes.empty? ? '' : "#{release_notes}\n"}#{
       github_release.nil? ? '' : "Github Release(#{github_release["id"]}): #{github_release["html_url"]}"
     }"
+    IpcClient.send_event("Uploading to Firebase App Distribution", {start: true})
     release = firebase_app_distribution(
       app: config[:firebase_app_id],
       service_credentials_file: config[:firebase_credentials_path],
@@ -211,7 +219,8 @@ platform :ios do
       release_notes: release_notes_with_github,
       ipa_path: ipa_result[:path]
     )
-    IpcClient.send_event("Uploaded to Firebase App Distribution:", {
+    IpcClient.send_event("Uploaded to Firebase App Distribution", {
+      end: true,
       download: release[:binaryDownloadUri],
       console: release[:firebaseConsoleUri],
       testing: release[:testingUri],
@@ -247,7 +256,7 @@ platform :ios do
         code_sign_identity: target[:cert_name]
       )
     end
-    
+
     # Archive
     build_app(
       workspace: config[:workspace],
@@ -340,13 +349,17 @@ platform :android do
   desc "Push a new build to Firebase App Distribution"
 
   before_all do |lane|
+    pre_script = ConfigHelper.optional_env("BEFORE_ALL", default: nil)
+    sh(pre_script) if pre_script
     Dir.chdir(ENV['CALLER_WORKSPACE']) do
       # "npm ls" başarılıysa (0 dönerse) sistem zaten güncel demektir.
+      IpcClient.send_event("Node modules are checking", { id: 0, start: true })
       if system("npm ls > /dev/null 2>&1")
-        IpcClient.send_event("Node modules are up to date")
+        IpcClient.send_event("Node modules are up to date", { id: 0, end: true })
       else
-        IpcClient.send_event("Installing node modules")
+        IpcClient.send_event("Node modules are installing", { id: 0 })
         sh("npm ci")
+        IpcClient.send_event("Node modules are installed", { id: 0, end: true })
       end
     end
   end
@@ -369,9 +382,9 @@ platform :android do
       version_code: new_build_number,
       gradle_file: config[:app_gradle_file_path]
     )
-    IpcClient.send_event("Building: v#{version_name}(#{new_build_number})")
-
+    IpcClient.send_event("Building: v#{version_name}(#{new_build_number})", { id: 2, start: true })
     create_bundle(export_method: config[:export_method])
+    IpcClient.send_event("Build: v#{version_name}(#{new_build_number})", { id: 2, end: true })
 
     apk_path = lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]
     aab_path = lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH]
@@ -380,10 +393,10 @@ platform :android do
       input_dir_path: config[:export_method] == "apk" ? File.dirname(apk_path) : File.dirname(aab_path),
       output_path: config[:zip_asset_path]
     )
-    
+
     File.open(ENV['GITHUB_ENV'], 'a') { |f| f.puts("RELEASE_ASSET_PATH=#{config[:zip_asset_path]}") } if ENV['GITHUB_ENV']
 
-    
+
     release_notes = GithubHelper.release_notes(
       cliff: config[:cliff],
       platform: :android,
@@ -395,6 +408,7 @@ platform :android do
 
     github_release = nil
     if ENV["GITHUB_TOKEN"] && !ENV["GITHUB_TOKEN"].empty?
+      IpcClient.send_event("Creating Github Release", { id: 3, start: true })
       github_release = GithubHelper.create_release(
         build_environment: config[:build_environment],
         platform: :android,
@@ -403,7 +417,7 @@ platform :android do
         release_notes: release_notes,
         upload_assets: [config[:zip_asset_path]]
       )
-      IpcClient.send_event("Created Github Release", { url: github_release["html_url"] })
+      IpcClient.send_event("Created Github Release", { id: 3, end: true, url: github_release["html_url"] })
     end
 
     play_store_params = {
@@ -420,9 +434,10 @@ platform :android do
       play_store_params[:aab] = aab_path
       play_store_params[:skip_upload_apk] = true
     end
-    puts "play_store_params #{play_store_params}"
+
+    IpcClient.send_event("Uploading to Play Store", { id: 4, start: true })
     upload_to_play_store(play_store_params)
-    IpcClient.send_event("Uploaded to Play Store")
+    IpcClient.send_event("Uploaded to Play Store", { id: 4, end: true })
   end
 
   lane :adhoc do |options|
@@ -434,22 +449,23 @@ platform :android do
     )
 
     version_name  = android_get_version_name(gradle_file: config[:app_gradle_file_path])
-    
+
     latest_release = firebase_app_distribution_get_latest_release(
       app: config[:firebase_app_id],
       service_credentials_file: config[:firebase_credentials_path]
     )
-      
+
     new_build_number = (latest_release&.[](:buildVersion).to_i || 0) + 1
-    
+
     android_set_version_code(
       version_code: new_build_number,
       gradle_file: config[:app_gradle_file_path]
     )
 
-    IpcClient.send_event("Building: v#{version_name}(#{new_build_number})")
+    IpcClient.send_event("Building: v#{version_name}(#{new_build_number})", { id: 2, start: true })
 
     create_bundle(export_method: config[:export_method])
+    IpcClient.send_event("Build: v#{version_name}(#{new_build_number})", { id: 2, end: true })
 
     apk_path = lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]
     aab_path = lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH]
@@ -472,6 +488,7 @@ platform :android do
 
     github_release = nil
     if ENV["GITHUB_TOKEN"] && !ENV["GITHUB_TOKEN"].empty?
+      IpcClient.send_event("Creating Github Release", { id: 3, start: true })
       github_release = GithubHelper.create_release(
         build_environment: config[:build_environment],
         platform: :android,
@@ -480,7 +497,7 @@ platform :android do
         release_notes: release_notes,
         upload_assets: [config[:zip_asset_path]]
       )
-      IpcClient.send_event("Created Github Release", { url: github_release["html_url"] })
+      IpcClient.send_event("Created Github Release", { id: 3, end: true, url: github_release["html_url"] })
     end
 
     release_notes_with_github = "#{release_notes.empty? ? '' : "#{release_notes}\n"}#{
@@ -501,9 +518,11 @@ platform :android do
       firebase_app_distribution_params[:android_artifact_type] = "AAB"
       firebase_app_distribution_params[:android_artifact_path] = aab_path
     end
-
+    IpcClient.send_event("Uploading to Firebase App Distribution", { id: 4, start: true })
     release = firebase_app_distribution(firebase_app_distribution_params)
-    IpcClient.send_event("Uploaded to Firebase App Distribution:", {
+    IpcClient.send_event("Uploaded to Firebase App Distribution", {
+      id: 4,
+      end: true,
       download: release[:binaryDownloadUri],
       console: release[:firebaseConsoleUri],
       testing: release[:testingUri],

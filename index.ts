@@ -28,9 +28,9 @@
  *
  * @module
  */
-
-import pc from "picocolors";
+import { intro, outro, log } from "@clack/prompts";
 import { cac, type CAC } from "cac";
+import "./commands/_constants.js";
 import { getRuntimeTimeArgs } from "./commands/runtime/index.js";
 import { status } from "./commands/status/index.js";
 import { build } from "./commands/build/index.js";
@@ -41,7 +41,9 @@ import pkg from "./package.json" with { type: "json" };
 /**
  * The current semantic version of the toolkit.
  */
-const VERSION: string = pkg.version;
+export const VERSION: string = pkg.version;
+
+intro(`CMD Bin | React Native`);
 
 /**
  * The main CAC instance used to define and manage CLI commands.
@@ -58,9 +60,7 @@ clean(cli);
 cli.help((sections) => {
   sections.push({
     title: "Examples",
-    body: `  $ npx ${pkg.name} status
-  $ bunx ${pkg.name} status
-  $ deno x jsr:${pkg.name} status`,
+    body: `  $ npx ${pkg.name} status`,
   });
 });
 
@@ -76,11 +76,11 @@ cli.usage("<command> [options]");
  * run(["node", "index.ts", "status"]);
  * ```
  */
-function run(args: string[]): void {
+export function run(args: string[]): void {
   try {
     cli.parse(args);
   } catch (error) {
-    console.error(`❌ Error: ${(error as Error).message}`);
+    log.error((error as Error).message);
     process?.exit(1);
   }
 }
@@ -90,7 +90,7 @@ function run(args: string[]): void {
  */
 if (import.meta.main) {
   process.on("exit", (code) => {
-    if (code === 1) console.log(pc.dim(`👋  ${pc.italic("Exiting...")}`));
+    outro("👋  Bye!");
   });
   run(getRuntimeTimeArgs());
 }

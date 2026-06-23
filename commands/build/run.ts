@@ -1,14 +1,17 @@
-import { getWorkspaceEnv } from "../workspace_env.js";
+import { getWorkspaceEnv } from "./utils/workspace_env.js";
 import { spawnProcess, registerProcessSignals } from "./utils/process.js";
 import pc from "picocolors";
 import path from "node:path";
 import { IpcServer } from "./utils/ipc_server.js";
-import { startLog } from "./utils/logger.js";
+import { formatDuration, startLog } from "./utils/logger.js";
+import { spinner, log } from "@clack/prompts";
+
+const Spinner = spinner();
 
 export async function run(
   command: string,
   args: string[],
-  env: Record<string, string | undefined>,
+  env: Record<string, string | boolean | undefined>,
   cwd: string | null = null,
 ) {
   const code = (await spawnProcess(command, args, {
@@ -21,7 +24,7 @@ export async function run(
 
 export async function runFastlane(
   fastlaneArgs: string[],
-  env: Record<string, string | undefined>,
+  env: Record<string, string | boolean | undefined>,
 ) {
   if (fastlaneArgs.length === 0)
     throw new Error(
@@ -33,18 +36,19 @@ export async function runFastlane(
 
 export async function runBundle(
   bundleArgs: string[],
-  options: Record<string, string | undefined>,
+  options: Record<string, string | boolean | undefined>,
 ) {
   const env = getWorkspaceEnv(options);
   await run(
     "bundle",
     bundleArgs,
     env,
-    path.resolve(env.CALLER_WORKSPACE, "ios"),
+    env.WORKSPACE_PATH ??
+      path.resolve(globalThis._constants.CALLER_WORKSPACE, "ios"),
   );
 }
 
-async function checkBundle(env: Record<string, string | undefined>) {
+async function checkBundle(env: Record<string, string | boolean | undefined>) {
   try {
     const code = await spawnProcess("bundle", ["check"], {
       cwd: env.FASTLANE_DIR,
@@ -59,10 +63,10 @@ async function checkBundle(env: Record<string, string | undefined>) {
 let cleanupCalled = false;
 export async function runCommand(
   args: string[],
-  options: Record<string, string | undefined>,
+  options: Record<string, string | boolean | undefined>,
 ) {
   const env = getWorkspaceEnv(options);
-  const logProcess = (text: string) => startLog(text, env.NO_LOGS);
+  // const logProcess = (text: string) => startLog(text, env.NO_LOGS);
 
   const ipcServer = new IpcServer(env);
   const stopServer = (await ipcServer.start()) as () => void;
@@ -74,43 +78,57 @@ export async function runCommand(
   });
 
   try {
-    let stopAnim = logProcess("📦  Bundle gem check");
-    cleanup.unshift(stopAnim);
-    const isBundleReady = await checkBundle(env);
-    cleanup.splice(cleanup.indexOf(stopAnim), 1);
-    let duration = stopAnim();
+    let timeString = new Date().toTimeString().split(" ")[0];
+    let startTimer = performance.now();
+    Spinner.start(
+      pc.dim(pc.gray(`(${timeString})`)) + " 📦" + " Bundle gem check",
+    );
 
-    if (!isBundleReady) {
-      stopAnim = logProcess("📦  Bundle gem install");
-      cleanup.unshift(stopAnim);
-      await run("bundle", ["install"], env);
-      cleanup.splice(cleanup.indexOf(stopAnim), 1);
-      duration = stopAnim();
-      const timeString = new Date().toTimeString().split(" ")[0];
-      console.log(
+    const isBundleReady = await checkBundle(env);
+    timeString = new Date().toTimeString().split(" ")[0];
+    // let [duration, stopFn, Spinner] = stopAnim();
+
+    if (isBundleReady) {
+      Spinner.stop(
         pc.dim(pc.gray(`(${timeString})`)) +
           " " +
-          pc.green(`✅  Bundle gem install completed. (${pc.bold(duration)})`),
+          pc.green(
+            `✅  Bundle gems are ready. (${pc.bold(formatDuration(performance.now() - startTimer))})`,
+          ),
       );
-    } else {
-      const timeString = new Date().toTimeString().split(" ")[0];
-      console.log(
+    } else if (!isBundleReady) {
+      timeString = new Date().toTimeString().split(" ")[0];
+      Spinner.message(
+        pc.dim(pc.gray(`(${timeString})`)) + " 📦" + ` Bundle gem install`,
+      );
+      startTimer = performance.now();
+      await run("bundle", ["install"], env);
+      timeString = new Date().toTimeString().split(" ")[0];
+      Spinner.stop(
         pc.dim(pc.gray(`(${timeString})`)) +
           " " +
-          pc.green(`✅  Bundle gems are ready. (${pc.bold(duration)})`),
+          pc.green(
+            `✅  Bundle gem install completed. (${pc.bold(formatDuration(performance.now() - startTimer))})`,
+          ),
       );
     }
-
-    stopAnim = logProcess("🚀  [Fastlane]: process");
-    cleanup.unshift(stopAnim);
-    await runFastlane(args, env);
-    cleanup.splice(cleanup.indexOf(stopAnim), 1);
-    duration = stopAnim();
-    const timeString = new Date().toTimeString().split(" ")[0];
-    console.log(
+    timeString = new Date().toTimeString().split(" ")[0];
+    log.info(
       pc.dim(pc.gray(`(${timeString})`)) +
         " " +
-        pc.green(`✅  Fastlane process completed. (${pc.bold(duration)})`),
+        "🚀  [Fastlane]: process started",
+    );
+    const fastlaneStartTime = performance.now();
+
+    await runFastlane(args, env);
+    // [duration, stopFn] = stopAnim();
+    timeString = new Date().toTimeString().split(" ")[0];
+    log.success(
+      pc.dim(pc.gray(`(${timeString})`)) +
+        " " +
+        pc.green(
+          `✅  Fastlane process completed. (${pc.bold(formatDuration(performance.now() - fastlaneStartTime))})`,
+        ),
     );
   } finally {
     stopServer();

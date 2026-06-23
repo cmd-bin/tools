@@ -1,12 +1,13 @@
 import { type CAC } from "cac";
+import { log } from "@clack/prompts";
 import { getRuntime } from "../runtime/index.js";
 import pkg from "../../package.json" with { type: "json" };
 
 export const status = (cli: CAC) => {
   const commandHandler = (): void => {
-    console.log(`✅ ${cli.name} is active.`);
-    console.log(`🚀 Version: ${pkg.version}`);
-    console.log(`🛠️ Runtime: ${getRuntime()}`);
+    log.message(`${cli.name} is active.`, { symbol: "✅" });
+    log.message(`Version: ${pkg.version}`, { symbol: "🚀" });
+    log.message(`Runtime: ${getRuntime()}`, { symbol: "🛠️ " });
   };
 
   cli
