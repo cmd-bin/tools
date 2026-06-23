@@ -5,3 +5,6 @@
 /index.ts
 /jsr.json
 /tsconfig.json
+/.releaserc
+/mise.toml
+/tsdown.config.ts
