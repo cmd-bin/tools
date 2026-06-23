@@ -6,5 +6,6 @@ export default defineConfig([
     platform: "node",
     clean: ["./dist"],
     outDir: "./dist",
+    minify: true,
   },
 ]);
