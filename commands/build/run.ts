@@ -66,7 +66,6 @@ export async function runCommand(
   options: Record<string, string | boolean | undefined>,
 ) {
   const env = getWorkspaceEnv(options);
-  // const logProcess = (text: string) => startLog(text, env.NO_LOGS);
 
   const ipcServer = new IpcServer(env);
   const stopServer = (await ipcServer.start()) as () => void;

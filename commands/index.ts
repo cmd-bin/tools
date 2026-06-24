@@ -30,13 +30,13 @@
  */
 import { intro, outro, log } from "@clack/prompts";
 import { cac, type CAC } from "cac";
-import "./commands/_constants.js";
-import { getRuntimeTimeArgs } from "./commands/runtime/index.js";
-import { status } from "./commands/status/index.js";
-import { build } from "./commands/build/index.js";
-import { bundle } from "./commands/bundle/index.js";
-import { clean } from "./commands/clean/index.js";
-import pkg from "./package.json" with { type: "json" };
+import "./_constants.js";
+import { getRuntimeTimeArgs } from "./runtime/index.js";
+import { status } from "./status/index.js";
+import { build } from "./build/index.js";
+import { bundle } from "./bundle/index.js";
+import { clean } from "./clean/index.js";
+import pkg from "../package.json" with { type: "json" };
 
 /**
  * The current semantic version of the toolkit.

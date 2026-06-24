@@ -60,7 +60,11 @@ export class IpcServer extends EventEmitter {
       `nf_ipc_${crypto.randomUUID()}.sock`,
     );
     this.server = null;
-    this.on("message", (msg) => defaultMessageLogger(msg, this.group));
+    this.on(
+      "message",
+      (msg: { event: string; payload: Record<string, unknown> }) =>
+        defaultMessageLogger(msg, this.group),
+    );
   }
 
   async start() {
