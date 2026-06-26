@@ -2,9 +2,13 @@ import path from "node:path";
 import fs from "node:fs";
 import dotenv from "dotenv";
 import pc from "picocolors";
-import { spinner, log } from "@clack/prompts";
+import { log } from "@clack/prompts";
+
+let envLoaded = false;
 
 export function loadDeployEnv() {
+  if (envLoaded) return;
+
   const envPath = path.join(
     globalThis._constants.CALLER_WORKSPACE,
     ".env.deploy",
@@ -19,4 +23,5 @@ export function loadDeployEnv() {
         ` Loaded env from ${pc.bold(path.relative(process.cwd(), envPath))}`,
       ),
   );
+  envLoaded = true;
 }

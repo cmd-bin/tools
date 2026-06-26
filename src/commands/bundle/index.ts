@@ -1,6 +1,5 @@
 import { type CAC } from "cac";
-import { loadDeployEnv } from "../build/load_deploy_env.js";
-import { runCommand, runBundle } from "../build/run.js";
+import { runBundle } from "../../utils/run.js";
 
 export const bundle = (cli: CAC) => {
   cli
@@ -10,7 +9,6 @@ export const bundle = (cli: CAC) => {
     )
     .action(async (bundleArgs) => {
       try {
-        loadDeployEnv();
         await runBundle(bundleArgs, cli.options);
       } catch (e: unknown) {
         if (e instanceof Error) console.error(e.message);

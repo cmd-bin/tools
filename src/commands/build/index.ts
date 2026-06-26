@@ -1,6 +1,5 @@
-import { loadDeployEnv } from "./load_deploy_env.js";
 import { clearBuilds } from "./clear_builds.js";
-import { runCommand } from "./run.js";
+import { runCommand } from "../../utils/run.js";
 import { type CAC } from "cac";
 
 export const build = (cli: CAC) => {
@@ -8,7 +7,6 @@ export const build = (cli: CAC) => {
     const isAndroid = args.includes("android");
 
     try {
-      loadDeployEnv();
       if (options.clean) await clearBuilds(isAndroid ? "android" : "ios");
       await runCommand(args, options);
     } catch (e: unknown) {
@@ -18,7 +16,7 @@ export const build = (cli: CAC) => {
   };
   cli
     .command(
-      "build [...fastlaneArgs]",
+      "[...fastlaneArgs]",
       "Install Fastlane gems and run bundle exec fastlane",
     )
     .option("-p, --production", "use _PROD env vars")

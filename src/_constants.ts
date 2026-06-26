@@ -10,6 +10,7 @@ globalThis._constants = {
   GITHUB_REPO_PATTERN,
   CALLER_WORKSPACE,
   FASTLANE_DIR,
+  IPC_SERVER_STOP: () => {},
 };
 
 declare global {
@@ -17,5 +18,6 @@ declare global {
     GITHUB_REPO_PATTERN: typeof GITHUB_REPO_PATTERN;
     CALLER_WORKSPACE: typeof CALLER_WORKSPACE;
     FASTLANE_DIR: typeof FASTLANE_DIR;
+    IPC_SERVER_STOP: () => void;
   };
 }

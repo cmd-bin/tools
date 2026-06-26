@@ -1,7 +1,7 @@
 import { type CAC } from "cac";
 import { log } from "@clack/prompts";
-import { getRuntime } from "../runtime/index.js";
-import pkg from "../../package.json" with { type: "json" };
+import { getRuntime } from "../../utils/runtime.js";
+import pkg from "../../../package.json" with { type: "json" };
 
 export const status = (cli: CAC) => {
   const commandHandler = (): void => {

@@ -5,7 +5,7 @@ import fs from "node:fs";
 import pc from "picocolors";
 import { EventEmitter } from "node:events";
 import crypto from "node:crypto";
-import { spinner, log } from "@clack/prompts";
+import { spinner, log, taskLog, stream } from "@clack/prompts";
 // import { p, proggressStep } from "../run.js";
 
 export const S = spinner({
@@ -14,13 +14,13 @@ export const S = spinner({
 });
 type Message = {
   event: string;
-  payload?: Record<string, unknown>;
+  payload?: Record<string, unknown> & { list?: Array<Record<string, string>> };
 };
 
 const defaultMessageLogger = (msg: Message, group = "Fastlane") => {
   if (msg.event) {
     const timeString = new Date().toTimeString().split(" ")[0];
-    const message = `${pc.dim(pc.gray(`(${timeString})`))} ${pc.cyan(`⚡  [${group}]:`)} ${pc.white(msg.event)}`;
+    const message = `${pc.dim(pc.gray(`(${timeString})`))} ${pc.dim(pc.cyan(`⚡  [${group}]:`))} ${pc.white(msg.event)}`;
     if (msg.payload?.start) {
       S.start(message);
     } else if (msg.payload?.end) {
@@ -28,18 +28,20 @@ const defaultMessageLogger = (msg: Message, group = "Fastlane") => {
     } else {
       S.message(message);
     }
-    // lastMessage = `${pc.dim(pc.gray(`(${timeString})`))} ${pc.cyan(`⚡  [${group}]:`)} ${pc.white(msg.event)}`;
-    // S.start(lastMessage);
 
-    // if (msg.payload && Object.keys(msg.payload).length > 0) {
-    //   for (const [key, value] of Object.entries(msg.payload)) {
-    //     const valStr =
-    //       typeof value === "object" ? JSON.stringify(value) : value;
-    //     log.info(
-    //       `${" ".repeat(16)}${pc.dim(key.padEnd(10, " ") + ":")} ${valStr}`,
-    //     );
-    //   }
-    // }
+    if (msg.payload?.list) {
+      let list = [];
+      for (const item of msg.payload?.list ?? []) {
+        let str = "";
+        Object.entries(item).forEach(
+          ([key, value]: [string, string], index: number) => {
+            str += `${pc.dim(key + ":")} ${pc.green(value)}${index === Object.keys(item).length - 1 ? "" : " | "}`;
+          },
+        );
+        list.push(str);
+      }
+      stream.message(list.map((str) => `${str}\n`));
+    }
   }
 };
 
@@ -101,7 +103,9 @@ export class IpcServer extends EventEmitter {
       this.server.listen(this.socketPath, () => {
         this.env.NF_IPC_SOCKET = this.socketPath;
         resolve(() => {
-          this.server?.close();
+          this.server?.close(() => {
+            this.stop();
+          });
         });
       });
     });
@@ -109,8 +113,12 @@ export class IpcServer extends EventEmitter {
 
   stop() {
     if (this.server) {
-      this.server.close();
-      this.server = null;
+      this.server.close((err) => {
+        if (!err) {
+          this.server = null;
+          globalThis._constants.IPC_SERVER_STOP = () => {};
+        }
+      });
     }
     if (fs.existsSync(this.socketPath)) {
       try {

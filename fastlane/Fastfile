@@ -12,7 +12,16 @@ XCODEBUILD_FORMATTER    = 'xcbeautify --renderer github-actions'
 default_platform(:ios)
 
 after_all do |lane|
+  if $pbxproj_path && $pbxproj_backup
+    File.write($pbxproj_path, $pbxproj_backup)
+  end
   cleanup
+end
+
+error do |lane, exception|
+  if $pbxproj_path && $pbxproj_backup
+    File.write($pbxproj_path, $pbxproj_backup)
+  end
 end
 
 platform :ios do
@@ -281,6 +290,9 @@ platform :ios do
     app_target   = targets.find { |t| t[:bundle_id] == config[:app_identifier] }
     version      = get_version_number(xcodeproj: config[:project], target: app_target[:name])
     build_number = get_build_number(xcodeproj: config[:project])
+
+    $pbxproj_path ||= File.join(config[:project], "project.pbxproj")
+    $pbxproj_backup ||= File.read($pbxproj_path)
 
     targets.each do |target|
       update_code_signing_settings(

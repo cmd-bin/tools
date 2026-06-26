@@ -20,6 +20,7 @@ type ENV = Record<string, string> & {
   BUNDLE_PATH: string;
   BUNDLE_FORCE_RUBY_PLATFORM: string;
   FASTLANE_FASTFILE: string;
+  FASTLANE_HIDE_PLUGINS_TABLE: boolean;
 
   // Scripts environment variables
   CALLER_WORKSPACE: string;
@@ -88,7 +89,7 @@ export function getWorkspaceEnv(options: Record<string, unknown> = {}): ENV {
     BUNDLE_GEMFILE:
       process.env.BUNDLE_GEMFILE || path.join(fastlaneDir, "Gemfile"),
     BUNDLE_PATH:
-      process.env.BUNDLE_PATH || path.join(callerWorkspace, "vendor", "bundle"),
+      process.env.BUNDLE_PATH || path.join(fastlaneDir, "vendor", "bundle"),
     BUNDLE_FORCE_RUBY_PLATFORM:
       process.env.BUNDLE_FORCE_RUBY_PLATFORM || "true",
     FASTLANE_FASTFILE: path.join(fastlaneDir, "Fastfile"),
@@ -96,6 +97,7 @@ export function getWorkspaceEnv(options: Record<string, unknown> = {}): ENV {
     // Scripts environment variables
     CALLER_WORKSPACE: callerWorkspace,
     FASTLANE_DIR: fastlaneDir,
+    FASTLANE_HIDE_PLUGINS_TABLE: true,
     NO_LOGS: process.env.NO_LOGS !== "false",
     KEEP_OUTPUTS: process.env.KEEP_OUTPUTS === "true",
 

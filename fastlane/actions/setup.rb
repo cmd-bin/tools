@@ -53,39 +53,41 @@ module Fastlane
               issuer_id: config[:issuer_id],
               is_key_content_base64: false,
               key_filepath: config[:key_filepath],
-              in_house: config[:in_house]
+              in_house: config[:in_house],
+              set_spaceship_token: true
             )
           end
         )
 
-        other_action.ipc_wrapper(
-          event_name: "Matching certificates",
-          end_event_name: "Certificates Matched",
-          action: proc do
-            other_action.match(
-              type: match_type,
-              app_identifier: target_identifier_map.map { |t| t[:bundle_id] },
-              username: config[:match_username],
-              clone_branch_directly: true,
-              storage_mode: "git",
-              git_url: config[:match_git_url],
-              git_branch: config[:match_git_branch],
-              api_key: api_key,
-              readonly: config[:match_readonly],
-              git_private_key: FileHelper.decode_base64(config[:match_git_private_key_base64])
-            )
-          end
-        )
-
-        cert_name = ENV["sigh_#{config[:app_identifier]}_#{match_type}_certificate-name"]
+        if params[:run_match]
+          other_action.ipc_wrapper(
+            event_name: "Matching certificates",
+            end_event_name: "Certificates Matched",
+            action: proc do
+              other_action.match(
+                type: match_type,
+                app_identifier: target_identifier_map.map { |t| t[:bundle_id] },
+                username: config[:match_username],
+                clone_branch_directly: true,
+                storage_mode: "git",
+                git_url: config[:match_git_url],
+                git_branch: config[:match_git_branch],
+                api_key: api_key,
+                readonly: config[:match_readonly],
+                git_private_key: FileHelper.decode_base64(config[:match_git_private_key_base64])
+              )
+            end
+          )
+        end
+        cert_name = params[:run_match] ? ENV["sigh_#{config[:app_identifier]}_#{match_type}_certificate-name"] : nil
         targets = target_identifier_map.map do |target|
           bid = target[:bundle_id]
           {
             name: target[:name],
             bundle_id: bid,
-            profile_uuid: ENV["sigh_#{bid}_#{match_type}"],
-            profile_name: ENV["sigh_#{bid}_#{match_type}_profile-name"],
-            profile_path: ENV["sigh_#{bid}_#{match_type}_profile-path"],
+            profile_uuid: params[:run_match] ? ENV["sigh_#{bid}_#{match_type}"] : nil,
+            profile_name: params[:run_match] ? ENV["sigh_#{bid}_#{match_type}_profile-name"] : nil,
+            profile_path: params[:run_match] ? ENV["sigh_#{bid}_#{match_type}_profile-path"] : nil,
             cert_name: cert_name
           }
         end
@@ -122,7 +124,12 @@ module Fastlane
           FastlaneCore::ConfigItem.new(key: :export_method,
                                        description: "Export method",
                                        optional: true,
-                                       type: String)
+                                       type: String),
+          FastlaneCore::ConfigItem.new(key: :run_match,
+                                       description: "Run match",
+                                       optional: true,
+                                       is_string: false,
+                                       type: Boolean)
         ]
       end
 

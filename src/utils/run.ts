@@ -1,9 +1,9 @@
-import { getWorkspaceEnv } from "./utils/workspace_env.js";
-import { spawnProcess, registerProcessSignals } from "./utils/process.js";
+import { getWorkspaceEnv } from "./workspace_env.js";
+import { spawnProcess, registerProcessSignals } from "./process.js";
 import pc from "picocolors";
 import path from "node:path";
-import { IpcServer } from "./utils/ipc_server.js";
-import { formatDuration, startLog } from "./utils/logger.js";
+// import { IpcServer } from "../../utils/ipc_server.js";
+import { formatDuration, startLog } from "./logger.js";
 import { spinner, log } from "@clack/prompts";
 
 const Spinner = spinner();
@@ -39,13 +39,7 @@ export async function runBundle(
   options: Record<string, string | boolean | undefined>,
 ) {
   const env = getWorkspaceEnv(options);
-  await run(
-    "bundle",
-    bundleArgs,
-    env,
-    env.WORKSPACE_PATH ??
-      path.resolve(globalThis._constants.CALLER_WORKSPACE, "ios"),
-  );
+  await run("bundle", bundleArgs, env);
 }
 
 async function checkBundle(env: Record<string, string | boolean | undefined>) {
@@ -67,9 +61,9 @@ export async function runCommand(
 ) {
   const env = getWorkspaceEnv(options);
 
-  const ipcServer = new IpcServer(env);
-  const stopServer = (await ipcServer.start()) as () => void;
-  const cleanup: ((_?: boolean) => void)[] = [stopServer];
+  // const ipcServer = new IpcServer(env);
+  // const stopServer = (await ipcServer.start()) as () => void;
+  const cleanup: ((_?: boolean) => void)[] = [];
   const cleanupServerListeners = registerProcessSignals(() => {
     if (cleanupCalled) return;
     cleanup.forEach((fn) => fn?.(false));
@@ -130,7 +124,7 @@ export async function runCommand(
         ),
     );
   } finally {
-    stopServer();
+    // stopServer();
     cleanupServerListeners();
   }
 }
