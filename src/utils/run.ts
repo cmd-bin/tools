@@ -46,7 +46,7 @@ async function checkBundle(env: Record<string, string | boolean | undefined>) {
   try {
     const code = await spawnProcess("bundle", ["check"], {
       cwd: env.FASTLANE_DIR,
-      stdio: env.NO_LOGS ? "ignore" : "inherit",
+      stdio: "ignore",
       env,
     });
     return code === 0;

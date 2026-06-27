@@ -2,11 +2,11 @@
 
 opt_out_usage
 
-require_relative "utils/config_helper"
-require_relative "utils/file_helper"
-require_relative "utils/github_helper"
+require_relative 'utils/config_helper'
+require_relative 'utils/file_helper'
+require_relative 'utils/github_helper'
 
-DEFAULT_EXPORT_METHOD   = "app-store"
+DEFAULT_EXPORT_METHOD   = 'app-store'
 XCODEBUILD_FORMATTER    = 'xcbeautify --renderer github-actions'
 
 default_platform(:ios)
@@ -25,7 +25,7 @@ error do |lane, exception|
 end
 
 platform :ios do
-  desc "Push a new build to TestFlight"
+  desc 'Push a new build to TestFlight'
 
   before_all do |lane|
     pre_script = ConfigHelper.optional_env("BEFORE_ALL", default: nil)
@@ -65,7 +65,7 @@ platform :ios do
   end
 
   lane :internal do
-    result        = setup(export_method: "app-store")
+    result        = setup(export_method: 'app-store')
     config        = result[:config]
     api_key       = result[:api_key]
 
@@ -122,8 +122,8 @@ platform :ios do
     github_release = nil
     if ENV["GITHUB_TOKEN"] && !ENV["GITHUB_TOKEN"].empty?
       github_release = ipc_wrapper(
-        event_name: "Creating Github Release",
-        end_event_name: "Created Github Release",
+        event_name: 'Creating Github Release',
+        end_event_name: 'Created Github Release',
         action: proc do
           GithubHelper.create_release(
             platform: :ios,

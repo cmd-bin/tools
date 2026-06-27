@@ -23,21 +23,18 @@ export async function spawnProcess(
 
     const killChild = () => {
       S.clear();
-      globalThis._constants.IPC_SERVER_STOP?.();
       if (!child.killed) child.kill("SIGTERM");
     };
 
     const cleanupListeners = registerProcessSignals(killChild);
 
     child.on("error", (err) => {
-      globalThis._constants.IPC_SERVER_STOP?.();
       S.error(err.message);
       cleanupListeners();
       reject(err);
     });
 
     child.on("exit", (code) => {
-      globalThis._constants.IPC_SERVER_STOP?.();
       if (code !== 0) S.error(`Process exited with code ${code}`);
       cleanupListeners();
       resolve(code);

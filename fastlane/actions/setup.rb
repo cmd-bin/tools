@@ -26,6 +26,7 @@ module Fastlane
 
       def self.setup_ios(params)
         is_ci = other_action.is_ci
+        run_match = params[:run_match] || true
         config = ConfigHelper.platform_config(platform: :ios, export_method: params[:export_method], is_ci: is_ci)
 
         other_action.setup_ci if ENV['CI']
@@ -59,7 +60,7 @@ module Fastlane
           end
         )
 
-        if params[:run_match]
+        if run_match
           other_action.ipc_wrapper(
             event_name: "Matching certificates",
             end_event_name: "Certificates Matched",
@@ -79,15 +80,15 @@ module Fastlane
             end
           )
         end
-        cert_name = params[:run_match] ? ENV["sigh_#{config[:app_identifier]}_#{match_type}_certificate-name"] : nil
+        cert_name = run_match ? ENV["sigh_#{config[:app_identifier]}_#{match_type}_certificate-name"] : nil
         targets = target_identifier_map.map do |target|
           bid = target[:bundle_id]
           {
             name: target[:name],
             bundle_id: bid,
-            profile_uuid: params[:run_match] ? ENV["sigh_#{bid}_#{match_type}"] : nil,
-            profile_name: params[:run_match] ? ENV["sigh_#{bid}_#{match_type}_profile-name"] : nil,
-            profile_path: params[:run_match] ? ENV["sigh_#{bid}_#{match_type}_profile-path"] : nil,
+            profile_uuid: run_match ? ENV["sigh_#{bid}_#{match_type}"] : nil,
+            profile_name: run_match ? ENV["sigh_#{bid}_#{match_type}_profile-name"] : nil,
+            profile_path: run_match ? ENV["sigh_#{bid}_#{match_type}_profile-path"] : nil,
             cert_name: cert_name
           }
         end
