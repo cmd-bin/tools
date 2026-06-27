@@ -13,6 +13,8 @@ export const bundle = (cli: CAC) => {
       } catch (e: unknown) {
         if (e instanceof Error) console.error(e.message);
         else console.error(e);
+      } finally {
+        globalThis._constants.IPC_SERVER_STOP?.();
       }
     });
 };

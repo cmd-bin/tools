@@ -8,6 +8,7 @@ export const status = (cli: CAC) => {
     log.message(`${cli.name} is active.`, { symbol: "✅" });
     log.message(`Version: ${pkg.version}`, { symbol: "🚀" });
     log.message(`Runtime: ${getRuntime()}`, { symbol: "🛠️ " });
+    globalThis._constants.IPC_SERVER_STOP?.();
   };
 
   cli

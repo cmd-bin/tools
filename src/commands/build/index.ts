@@ -9,10 +9,11 @@ export const build = (cli: CAC) => {
     try {
       if (options.clean) await clearBuilds(isAndroid ? "android" : "ios");
       await runCommand(args, options);
-      globalThis._constants.IPC_SERVER_STOP?.();
     } catch (e: unknown) {
       if (e instanceof Error) console.error(e.message);
       else console.error(e);
+    } finally {
+      globalThis._constants.IPC_SERVER_STOP?.();
     }
   };
   cli
