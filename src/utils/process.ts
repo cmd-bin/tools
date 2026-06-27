@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { S } from "./ipc_server.js";
 
 export function registerProcessSignals(cleanupFn: () => void) {
   process.on("exit", cleanupFn);
@@ -21,17 +22,20 @@ export async function spawnProcess(
     const child = spawn(command, args, options);
 
     const killChild = () => {
+      S.clear();
       if (!child.killed) child.kill("SIGTERM");
     };
 
     const cleanupListeners = registerProcessSignals(killChild);
 
     child.on("error", (err) => {
+      S.error(err.message);
       cleanupListeners();
       reject(err);
     });
 
     child.on("exit", (code) => {
+      if (code !== 0) S.error(`Process exited with code ${code}`);
       cleanupListeners();
       resolve(code);
     });

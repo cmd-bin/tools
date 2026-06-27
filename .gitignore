@@ -2,3 +2,5 @@ node_modules
 dist
 fastlane/report.xml
 fastlane/Readme.md
+fastlane/vendor
+.DS_Store

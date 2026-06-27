@@ -1,8 +1,8 @@
 .github
 /fastlane/report.xml
 /fastlane/Readme.md
-/commands
-/index.ts
+/fastlane/vendor
+/src
 /jsr.json
 /tsconfig.json
 /.releaserc

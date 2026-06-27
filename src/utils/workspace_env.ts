@@ -1,18 +1,43 @@
 import { execSync } from "node:child_process";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-const githubRepoPattern = /github\.com[:/]([^/]+\/[^/]+?)(?:\.git)?$/;
+type ENV = Record<string, string> & {
+  BUILD_ENVIRONMENT: string;
+  SCHEME: string;
+  BEFORE_ALL: string;
+  WORKSPACE_NAME: string;
+  APP_IDENTIFIER: string;
+  FIREBASE_IOS_APP_ID: string;
+  FIREBASE_CREDENTIALS: string;
+  FIREBASE_ANDROID_APP_ID: string;
+  GITHUB_REF_NAME: string;
+  GITHUB_REPOSITORY: string;
+  GITHUB_WORKSPACE: string;
+  WORKSPACE_PATH: string;
+  ANDROID_PROJECT_PATH: string;
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+  BUNDLE_GEMFILE: string;
+  BUNDLE_PATH: string;
+  BUNDLE_FORCE_RUBY_PLATFORM: string;
+  FASTLANE_FASTFILE: string;
+  FASTLANE_HIDE_PLUGINS_TABLE: boolean;
 
-const callerWorkspace = process.cwd();
-const fastlaneDir = path.resolve(__dirname, "..", "fastlane");
+  // Scripts environment variables
+  CALLER_WORKSPACE: string;
+  FASTLANE_DIR: string;
+  NO_LOGS: boolean;
+  KEEP_OUTPUTS: boolean;
 
-const envCache = new Map();
+  // Flags for build steps
+  USE_FRAMEWORKS: string;
+};
 
-export function getWorkspaceEnv(options: Record<string, unknown> = {}) {
+let WORKSPACE_ENV: ENV | null = null;
+export function getWorkspaceEnv(options: Record<string, unknown> = {}): ENV {
+  if (WORKSPACE_ENV) return WORKSPACE_ENV;
+
+  const callerWorkspace = globalThis._constants.CALLER_WORKSPACE;
+  const fastlaneDir = globalThis._constants.FASTLANE_DIR;
   const execOptions = { cwd: callerWorkspace };
   const remoteOriginUrl = execSync(
     "git config --get remote.origin.url",
@@ -24,11 +49,12 @@ export function getWorkspaceEnv(options: Record<string, unknown> = {}) {
     .toString()
     .trim();
 
-  const githubRepositoryMatch = remoteOriginUrl.match(githubRepoPattern)?.[1];
-  const cacheKey = JSON.stringify(options);
-  if (envCache.has(cacheKey)) {
-    return envCache.get(cacheKey);
-  }
+  const githubRepository = remoteOriginUrl.match(
+    globalThis._constants.GITHUB_REPO_PATTERN,
+  )?.[2];
+
+  if (!githubRepository)
+    throw new Error("Failed to get repository name from remote origin url");
 
   const buildType = options.production ? "PROD" : "DEV";
 
@@ -53,16 +79,17 @@ export function getWorkspaceEnv(options: Record<string, unknown> = {}) {
       process.env.FIREBASE_ANDROID_APP_ID ||
       process.env[`FIREBASE_ANDROID_APP_ID_${buildType}`],
     GITHUB_REF_NAME: process.env.GITHUB_REF_NAME || currentBranch,
-    GITHUB_REPOSITORY: process.env.GITHUB_REPOSITORY || githubRepositoryMatch,
+    GITHUB_REPOSITORY: process.env.GITHUB_REPOSITORY || githubRepository,
     GITHUB_WORKSPACE: process.env.GITHUB_WORKSPACE || callerWorkspace,
-    WORKSPACE_PATH: process.env.WORKSPACE_PATH || `${callerWorkspace}/ios`,
+    WORKSPACE_PATH:
+      process.env.WORKSPACE_PATH || path.join(callerWorkspace, "ios"),
     ANDROID_PROJECT_PATH:
-      process.env.ANDROID_PROJECT_PATH || `${callerWorkspace}/android`,
+      process.env.ANDROID_PROJECT_PATH || path.join(callerWorkspace, "android"),
 
     BUNDLE_GEMFILE:
       process.env.BUNDLE_GEMFILE || path.join(fastlaneDir, "Gemfile"),
     BUNDLE_PATH:
-      process.env.BUNDLE_PATH || path.join(callerWorkspace, "vendor", "bundle"),
+      process.env.BUNDLE_PATH || path.join(fastlaneDir, "vendor", "bundle"),
     BUNDLE_FORCE_RUBY_PLATFORM:
       process.env.BUNDLE_FORCE_RUBY_PLATFORM || "true",
     FASTLANE_FASTFILE: path.join(fastlaneDir, "Fastfile"),
@@ -70,13 +97,15 @@ export function getWorkspaceEnv(options: Record<string, unknown> = {}) {
     // Scripts environment variables
     CALLER_WORKSPACE: callerWorkspace,
     FASTLANE_DIR: fastlaneDir,
+    FASTLANE_HIDE_PLUGINS_TABLE: true,
     NO_LOGS: process.env.NO_LOGS !== "false",
     KEEP_OUTPUTS: process.env.KEEP_OUTPUTS === "true",
 
     // Flags for build steps
     USE_FRAMEWORKS: process.env.USE_FRAMEWORKS || "static",
-  };
+  } as ENV;
 
-  envCache.set(cacheKey, env);
+  WORKSPACE_ENV = env;
+
   return env;
 }

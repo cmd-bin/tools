@@ -2,9 +2,10 @@ import { defineConfig } from "tsdown";
 
 export default defineConfig([
   {
-    entry: "index.ts",
+    entry: "./src/index.ts",
     platform: "node",
     clean: ["./dist"],
     outDir: "./dist",
+    minify: true,
   },
 ]);
