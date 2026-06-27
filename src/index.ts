@@ -100,9 +100,15 @@ export async function run(args: string[]): Promise<void> {
  * Entry point guard for direct execution.
  */
 if (import.meta.main) {
-  process.on("SIGTERM", globalThis._constants.IPC_SERVER_STOP);
-  process.on("SIGINT", globalThis._constants.IPC_SERVER_STOP);
-  process.on("beforeExit", globalThis._constants.IPC_SERVER_STOP);
+  process.on("SIGTERM", (code) => {
+    globalThis._constants.IPC_SERVER_STOP?.();
+  });
+  process.on("SIGINT", (code) => {
+    globalThis._constants.IPC_SERVER_STOP?.();
+  });
+  process.on("beforeExit", (code) => {
+    globalThis._constants.IPC_SERVER_STOP?.();
+  });
   process.on("exit", (code) => {
     globalThis._constants.IPC_SERVER_STOP?.();
     outro("👋  Bye!");
