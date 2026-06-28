@@ -33,13 +33,10 @@ import { intro, outro, log } from "@clack/prompts";
 import { cac, type CAC } from "cac";
 import { getRuntimeTimeArgs } from "./utils/runtime.js";
 import { status } from "./commands/status/index.js";
-import { build } from "./commands/build/index.js";
+import { fastlane } from "./commands/fastlane/index.js";
 import { bundle } from "./commands/bundle/index.js";
 import { clean } from "./commands/clean/index.js";
 import pkg from "../package.json" with { type: "json" };
-import { IpcServer } from "./utils/ipc_server.js";
-import { getWorkspaceEnv } from "./utils/workspace_env.js";
-import { loadDeployEnv } from "./utils/load_deploy_env.js";
 
 /**
  * The current semantic version of the toolkit.
@@ -54,11 +51,9 @@ intro(`CMD Bin | React Native`);
 const cli: CAC = cac(pkg.name);
 cli.version(VERSION);
 
-loadDeployEnv();
-
 // --- Core Commands ---
 status(cli);
-build(cli);
+fastlane(cli);
 bundle(cli);
 clean(cli);
 
@@ -83,16 +78,17 @@ cli.usage("<command> [options]");
  */
 export async function run(args: string[]): Promise<void> {
   try {
-    const parsedArgs = cli.parse(args, { run: false });
-    const env = getWorkspaceEnv(parsedArgs.options);
-    const ipcServer = new IpcServer(env);
-    globalThis._constants.IPC_SERVER_STOP =
-      (await ipcServer.start()) as () => void;
-    cli.runMatchedCommand();
+    cli.parse(args, { run: false });
+    const result = cli.runMatchedCommand();
+
+    if (result instanceof Promise) {
+      await result;
+    }
   } catch (error) {
     log.error((error as Error).message);
-    globalThis._constants.IPC_SERVER_STOP?.();
     process?.exit(1);
+  } finally {
+    globalThis._constants.IPC_SERVER_STOP?.();
   }
 }
 

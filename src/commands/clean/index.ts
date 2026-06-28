@@ -1,5 +1,5 @@
 import { type CAC } from "cac";
-import { clearBuilds } from "../build/clear_builds.js";
+import { clearBuilds } from "../../utils/clear_builds.js";
 
 export const clean = (cli: CAC) => {
   cli
@@ -17,8 +17,6 @@ export const clean = (cli: CAC) => {
       } catch (e: unknown) {
         if (e instanceof Error) console.error(e.message);
         else console.error(e);
-      } finally {
-        globalThis._constants.IPC_SERVER_STOP?.();
       }
     });
 };

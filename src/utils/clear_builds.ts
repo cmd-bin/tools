@@ -3,7 +3,7 @@ import fsp from "node:fs/promises";
 import path from "node:path";
 import pc from "picocolors";
 import { spinner } from "@clack/prompts";
-import { formatDuration } from "../../utils/logger.js";
+import { formatDuration } from "./logger.js";
 
 const commonPaths = ["node_modules", "release_notes.md"];
 

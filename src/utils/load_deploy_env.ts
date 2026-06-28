@@ -25,3 +25,10 @@ export function loadDeployEnv() {
   );
   envLoaded = true;
 }
+
+export function withEnv<T extends (...args: any[]) => any>(action: T) {
+  return async (...args: Parameters<T>) => {
+    loadDeployEnv();
+    return await action(...args);
+  };
+}
