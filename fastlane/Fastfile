@@ -648,6 +648,7 @@ lane :match_sync do |options|
   puts "env file is loaded: #{ENV['APPLE_KEY_ID']}"
   generate_apple_certs = options[:generate].to_s.strip.downcase == 'true'
   force = options[:force].to_s.strip.downcase == 'true'
+  force_for_new_devices = options[:force_for_new_devices].to_s.strip.downcase == 'true'
 
   api_key = app_store_connect_api_key(
     key_id: ENV['APPLE_KEY_ID'],
@@ -714,7 +715,7 @@ lane :match_sync do |options|
     # Always renew provisioning profiles. Docs default: false.
     force: force,
     # Renew profiles when enabled device count changes. Docs default: false.
-    force_for_new_devices: false,
+    force_for_new_devices: force_for_new_devices,
     # Include Apple Silicon Macs in iOS/iPadOS profiles. Docs default: false.
     include_mac_in_profiles: false,
     # Include all matching certs in development profiles. Docs default: false.

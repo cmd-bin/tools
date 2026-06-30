@@ -1,6 +1,4 @@
-import { spinner, log } from "@clack/prompts";
-
-const Spinner = spinner();
+import pc from "picocolors";
 
 export function formatDuration(ms: number) {
   const roundedMs = Math.round(ms);
@@ -13,15 +11,16 @@ export function formatDuration(ms: number) {
   return mins > 0 ? `${mins}m ${secs}s` : `${(roundedMs / 1000).toFixed(2)}s`;
 }
 
-export function startLog(text: string, isNoLogs: boolean) {
-  Spinner.start(text);
+export const exampleLog = (text: string) => {
+  return (
+    pc.dim(pc.white(`  $ npx `)) + pc.magenta(text.replace("$", "").trim())
+  );
+};
 
-  return () => {
-    return [
-      (stopText: string = text) => {
-        Spinner.stop(stopText);
-      },
-      Spinner,
-    ] as const;
-  };
-}
+export const descriptionLog = (text: string) => {
+  return pc.cyan(text);
+};
+
+export const titleLog = (text: string) => {
+  return pc.bold(text);
+};

@@ -1,4 +1,5 @@
 import path from "node:path";
+import pkg from "../package.json" with { type: "json" };
 
 export const GITHUB_REPO_PATTERN =
   /github\.com([\w,-]+)?[:/]([^/]+\/[^/]+?)(?:\.git)?$/;
@@ -11,6 +12,7 @@ globalThis._constants = {
   CALLER_WORKSPACE,
   FASTLANE_DIR,
   IPC_SERVER_STOP: () => {},
+  PACKAGE_NAME: pkg.name,
 };
 
 declare global {
@@ -19,5 +21,6 @@ declare global {
     CALLER_WORKSPACE: typeof CALLER_WORKSPACE;
     FASTLANE_DIR: typeof FASTLANE_DIR;
     IPC_SERVER_STOP: () => void;
+    PACKAGE_NAME: string;
   };
 }

@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { log } from "@clack/prompts";
 import { S } from "./ipc_server.js";
 
 export function registerProcessSignals(cleanupFn: () => void) {
@@ -16,7 +17,7 @@ export function registerProcessSignals(cleanupFn: () => void) {
 export async function spawnProcess(
   command: string,
   args: string[],
-  options = {},
+  options: any = {},
 ) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, options);
@@ -25,6 +26,28 @@ export async function spawnProcess(
       S.clear();
       if (!child.killed) child.kill("SIGTERM");
     };
+
+    if (child.stdout) {
+      child.stdout.on("data", (data) => {
+        const lines = data.toString().split("\n");
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].trim() || i !== lines.length - 1) {
+            log.message(lines[i]);
+          }
+        }
+      });
+    }
+
+    if (child.stderr) {
+      child.stderr.on("data", (data) => {
+        const lines = data.toString().split("\n");
+        for (let i = 0; i < lines.length; i++) {
+          if (lines[i].trim() || i !== lines.length - 1) {
+            log.message(lines[i], { spacing: 0 });
+          }
+        }
+      });
+    }
 
     const cleanupListeners = registerProcessSignals(killChild);
 
@@ -35,7 +58,8 @@ export async function spawnProcess(
     });
 
     child.on("exit", (code) => {
-      if (code !== 0) S.error(`Process exited with code ${code}`);
+      if (code !== 0 && code !== null)
+        S.error(`Process exited with code ${code}`);
       cleanupListeners();
       resolve(code);
     });

@@ -3,7 +3,7 @@ import { spawnProcess, registerProcessSignals } from "./process.js";
 import pc from "picocolors";
 import path from "node:path";
 // import { IpcServer } from "../../utils/ipc_server.js";
-import { formatDuration, startLog } from "./logger.js";
+import { formatDuration } from "./logger.js";
 import { spinner, log } from "@clack/prompts";
 
 const Spinner = spinner();
@@ -16,7 +16,7 @@ export async function run(
 ) {
   const code = (await spawnProcess(command, args, {
     cwd: cwd ?? env.FASTLANE_DIR,
-    stdio: env.NO_LOGS ? "ignore" : "inherit",
+    stdio: env.NO_LOGS ? "ignore" : "pipe",
     env,
   })) as number;
   if (code !== 0) process.exit(code);
