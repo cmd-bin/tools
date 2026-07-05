@@ -36,6 +36,7 @@ import { status } from "./commands/status/index.js";
 import { fastlane } from "./commands/fastlane/index.js";
 import { bundle } from "./commands/bundle/index.js";
 import { clean } from "./commands/clean/index.js";
+import { init } from "./commands/init/index.js";
 import pkg from "../package.json" with { type: "json" };
 import pc from "picocolors";
 import { descriptionLog, exampleLog, titleLog } from "./utils/logger.js";
@@ -56,6 +57,7 @@ status(cli);
 fastlane(cli);
 bundle(cli);
 clean(cli);
+init(cli);
 
 cli.help((sections) => {
   for (const section of sections) {

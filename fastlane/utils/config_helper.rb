@@ -16,18 +16,18 @@ module ConfigHelper
   # Fetches an optional ENV variable, logs a warning and returns default if missing
   def self.optional_env(key, default: nil)
     result = ENV.fetch(key) { default }
-    
+
     # Treat empty strings as missing and return default
     if result.nil? || (result.is_a?(String) && result.strip.empty?)
       return default
     end
-    
+
     # Safely convert string values "true" and "false" into actual Ruby booleans
     if result.is_a?(String)
       return true if result.strip.downcase == "true"
       return false if result.strip.downcase == "false"
     end
-    
+
     result
   end
 
@@ -81,15 +81,15 @@ module ConfigHelper
     root_dir_name                   = optional_env("GITHUB_WORKSPACE", default: nil)
     root_dir_name                   ||= find_project_root(File.dirname(__FILE__))
     slack_url                       = optional_env("SLACK_URL", default: nil)
-    slack_mentions                  = optional_env("SLACK_MENTIONS", default: "")
+    slack_mentions                  = optional_env("SLACK_MENTIONS", default: '')
     firebase_credentials_base64     = optional_env("FIREBASE_CREDENTIALS", default: nil)
     firebase_tester_group           = optional_env("FIREBASE_TESTER_GROUP", default: "internal")
     build_environment               = optional_env("BUILD_ENVIRONMENT", default: "production") == 'production' ? 'Prod' : 'Dev'
     build_configuration             = optional_env("BUILD_CONFIGURATION", default: "Release")
     keep_outputs                    = optional_env("KEEP_OUTPUTS", default: false)
-    output_path                     = "lane_outputs"
-    private_keys_path               = "#{root_dir_name}/#{output_path}/private_keys"
-    derived_data_path               = "derived_data"
+    output_path                     = File.join(Dir.home, '.cmd-bin', 'react-native', 'lane-outputs')
+    private_keys_path               = "#{output_path}/private_keys"
+    derived_data_path               = File.join(Dir.home, '.cmd-bin', 'react-native', 'ios', 'derived-data')
     key_filepath                    = "#{private_keys_path}/private_key.p8"
     firebase_credentials_path       = "#{private_keys_path}/firebase_credentials.json"
     key_store_path                  = "#{private_keys_path}/key.keystore"
@@ -162,11 +162,11 @@ module ConfigHelper
       workspace_name: workspace_name,
       workspace: "#{root_dir_name}/ios/#{workspace_name}.xcworkspace",
       project: "#{root_dir_name}/ios/#{workspace_name}.xcodeproj",
-      lane_output_directory: "#{root_dir_name}/#{commons[:output_path]}/#{platform}",
-      xcarchive_path: "#{root_dir_name}/#{commons[:output_path]}/#{platform}/archive/Archive.xcarchive",
-      ipa_output_directory: "#{root_dir_name}/#{commons[:output_path]}/#{platform}/output/",
-      zip_asset_path: "#{root_dir_name}/#{commons[:output_path]}/tmp/#{platform}/app.zip",
-      derived_data_path: "#{root_dir_name}/#{commons[:derived_data_path]}",
+      lane_output_directory: "#{commons[:output_path]}/#{platform}",
+      xcarchive_path: "#{commons[:output_path]}/#{platform}/archive/Archive.xcarchive",
+      ipa_output_directory: "#{commons[:output_path]}/#{platform}/output/",
+      zip_asset_path: "#{commons[:output_path]}/tmp/#{platform}/app.zip",
+      derived_data_path: commons[:derived_data_path],
       scheme: scheme,
       team_id: team_id,
       itc_team_id: itc_team_id,
@@ -226,7 +226,7 @@ module ConfigHelper
       play_store_credentials_base64: play_store_credentials_base64,
       play_store_track: play_store_track,
       play_store_release_status: play_store_release_status,
-      zip_asset_path: "#{root_dir_name}/#{commons[:output_path]}/tmp/#{platform}/app.zip",
+      zip_asset_path: "#{commons[:output_path]}/tmp/#{platform}/app.zip",
     }
   end
 

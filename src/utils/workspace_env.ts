@@ -1,5 +1,6 @@
 import { execSync } from "node:child_process";
 import path from "node:path";
+import os from "node:os";
 
 type ENV = Record<string, string> & {
   BUILD_ENVIRONMENT: string;
@@ -89,7 +90,8 @@ export function getWorkspaceEnv(options: Record<string, unknown> = {}): ENV {
     BUNDLE_GEMFILE:
       process.env.BUNDLE_GEMFILE || path.join(fastlaneDir, "Gemfile"),
     BUNDLE_PATH:
-      process.env.BUNDLE_PATH || path.join(fastlaneDir, "vendor", "bundle"),
+      process.env.BUNDLE_PATH ||
+      path.join(os.homedir(), ".cmd-bin", "react-native", "vendor", "bundle"),
     BUNDLE_FORCE_RUBY_PLATFORM:
       process.env.BUNDLE_FORCE_RUBY_PLATFORM || "true",
     FASTLANE_FASTFILE: path.join(fastlaneDir, "Fastfile"),
