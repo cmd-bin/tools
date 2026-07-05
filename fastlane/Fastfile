@@ -284,7 +284,6 @@ platform :ios do
     result         = setup(export_method: options[:export_method] || DEFAULT_EXPORT_METHOD)
     targets        = result[:targets]
     config         = result[:config]
-    cert_name      = result[:cert_name]
     archive_path   = options[:archive_path] || config[:xcarchive_path]
 
     app_target   = targets.find { |t| t[:bundle_id] == config[:app_identifier] }
@@ -317,7 +316,6 @@ platform :ios do
       archive_path: archive_path,
       derived_data_path: config[:derived_data_path],
       skip_profile_detection: true,
-      codesigning_identity: cert_name,
       skip_build_archive: false,
       skip_codesigning: false,
       skip_package_ipa: true,
@@ -341,7 +339,6 @@ platform :ios do
     result       = setup(export_method: options[:export_method] || DEFAULT_EXPORT_METHOD)
     targets      = result[:targets]
     config       = result[:config]
-    cert_name    = result[:cert_name]
     archive_path = options[:archive_path] || config[:xcarchive_path]
     output_dir   = options[:output_directory] || config[:ipa_output_directory]
 
@@ -362,7 +359,6 @@ platform :ios do
       derived_data_path: config[:derived_data_path],
       output_directory: output_dir,
       skip_profile_detection: true,
-      codesigning_identity: cert_name,
       skip_build_archive: true,
       skip_codesigning: false,
       skip_package_ipa: false,
