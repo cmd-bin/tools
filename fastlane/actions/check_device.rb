@@ -7,10 +7,12 @@ module Fastlane
       def self.run(params)
         Actions.lane_context[:PLATFORM_NAME] ||= :ios
         other_action.setup(export_method: 'app-store', run_match: false)
-        other_action.ipc_client(event_name: "Getting Apple Developer devices", payload: { start: true })
+        other_action.ipc_client(event_name: 'Getting Apple Developer devices', payload: { start: true })
         devices = Spaceship::ConnectAPI::Device.all
         udid = params[:udid].to_s
-        other_action.ipc_client(event_name: "Apple Developer devices retrieved", payload: { end: true, list: devices.map { |d| { status: d.status, model:d.model, class: d.deviceClass, name: d.name, udid: d.udid, addedDate: d.addedDate  } } })
+        other_action.ipc_client(event_name: 'Apple Developer devices retrieved', payload: { end: true, list: devices.map do |d|
+          { status: d.status, model: d.model, class: d.deviceClass, name: d.name, udid: d.udid, addedDate: d.addedDate }
+        end })
         return list_devices(devices) if udid.empty?
 
         device = devices.find { |existing_device| existing_device.udid == udid }
@@ -44,7 +46,6 @@ module Fastlane
       end
 
       # Fastlane action API requires `is_supported?`.
-      # rubocop:disable Naming/PredicatePrefix
       def self.is_supported?(platform)
         platform == :ios
       end

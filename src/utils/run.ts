@@ -4,7 +4,9 @@ import pc from "picocolors";
 import path from "node:path";
 // import { IpcServer } from "../../utils/ipc_server.js";
 import { formatDuration } from "./logger.js";
+import { ensureRubyEnvironment } from "./ruby.js";
 import { spinner, log } from "@clack/prompts";
+import { spawnSync } from "node:child_process";
 
 const Spinner = spinner();
 
@@ -38,12 +40,20 @@ export async function runBundle(
   bundleArgs: string[],
   options: Record<string, string | boolean | undefined>,
 ) {
-  const env = getWorkspaceEnv(options);
+  const baseEnv = getWorkspaceEnv(options);
+  const env = await ensureRubyEnvironment(
+    baseEnv as Record<string, string | undefined>,
+  );
   await run("bundle", bundleArgs, env);
 }
 
-async function checkBundle(env: Record<string, string | boolean | undefined>) {
+async function checkBundle(
+  baseEnv: Record<string, string | boolean | undefined>,
+) {
   try {
+    const env = await ensureRubyEnvironment(
+      getWorkspaceEnv(baseEnv) as Record<string, string | undefined>,
+    );
     const code = await spawnProcess("bundle", ["check"], {
       cwd: env.FASTLANE_DIR,
       stdio: "ignore",
@@ -59,7 +69,10 @@ export async function runCommand(
   args: string[],
   options: Record<string, string | boolean | undefined>,
 ) {
-  const env = getWorkspaceEnv(options);
+  const baseEnv = getWorkspaceEnv(options);
+  const env = await ensureRubyEnvironment(
+    baseEnv as Record<string, string | undefined>,
+  );
 
   // const ipcServer = new IpcServer(env);
   // const stopServer = (await ipcServer.start()) as () => void;
@@ -105,6 +118,14 @@ export async function runCommand(
           ),
       );
     }
+
+    // Print the actual Ruby being used so the user can verify
+    const rubyPathCheck = spawnSync("which", ["ruby"], {
+      env: env as NodeJS.ProcessEnv,
+      encoding: "utf-8",
+    }).stdout.trim();
+    log.info(pc.cyan(`🔍  Using Ruby at: ${rubyPathCheck}`));
+
     timeString = new Date().toTimeString().split(" ")[0];
     log.info(
       pc.dim(pc.gray(`(${timeString})`)) +

@@ -5,7 +5,7 @@ require 'dotenv'
 require 'fileutils'
 
 module FileHelper
-  FILE_PERMISSION = 0400
+  FILE_PERMISSION = 0o400
 
   def self.decode_base64(base64_content)
     Base64.decode64(base64_content)
@@ -14,7 +14,7 @@ module FileHelper
   # Decodes a base64 string and writes the result to a file
   def self.decode_base64_to_file(base64_content, file_path)
     if base64_content.nil? || file_path.nil?
-      Fastlane::UI.message("Skipping decode: base64_content or file_path is nil")
+      Fastlane::UI.message('Skipping decode: base64_content or file_path is nil')
       return
     end
 
@@ -37,7 +37,7 @@ module FileHelper
 
     Fastlane::UI.message("Zipped #{input_dir_path} -> #{output_path}")
     output_path
-  end
+  end.
 
   def self.read_env(env_path: nil)
     env_path = File.expand_path('../../.env', __dir__) if env_path.nil?

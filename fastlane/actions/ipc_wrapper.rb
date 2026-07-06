@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Fastlane
   module Actions
     class IpcWrapperAction < Action
@@ -29,7 +31,7 @@ module Fastlane
             begin
               dynamic_payload = end_payload_proc.call(result)
               end_payload.merge!(dynamic_payload) if dynamic_payload.is_a?(Hash)
-            rescue => e
+            rescue StandardError => e
               UI.error("Error in end_payload_proc: #{e.message}")
             end
           end
@@ -37,35 +39,35 @@ module Fastlane
           other_action.ipc_client(event_name: end_event_name, payload: end_payload)
         end
 
-        return result
+        result
       end
 
       def self.description
-        "Wraps an action block/proc with IPC start and end events"
+        'Wraps an action block/proc with IPC start and end events'
       end
 
       def self.available_options
         [
           FastlaneCore::ConfigItem.new(key: :event_name,
-                                       description: "Name of the event",
+                                       description: 'Name of the event',
                                        optional: false,
                                        type: String),
           FastlaneCore::ConfigItem.new(key: :end_event_name,
-                                       description: "Optional name of the end event (defaults to event_name)",
+                                       description: 'Optional name of the end event (defaults to event_name)',
                                        optional: true,
                                        type: String),
           FastlaneCore::ConfigItem.new(key: :payload,
-                                       description: "Payload for the event",
+                                       description: 'Payload for the event',
                                        optional: true,
                                        is_string: false,
                                        default_value: {}),
           FastlaneCore::ConfigItem.new(key: :action,
-                                       description: "The function/proc to execute",
+                                       description: 'The function/proc to execute',
                                        optional: true,
                                        is_string: false,
                                        type: Proc),
           FastlaneCore::ConfigItem.new(key: :end_payload_proc,
-                                       description: "Optional proc that takes the block result and returns a hash to merge into the end event payload",
+                                       description: 'Optional proc that takes the block result and returns a hash to merge into the end event payload',
                                        optional: true,
                                        is_string: false,
                                        type: Proc)
@@ -73,14 +75,14 @@ module Fastlane
       end
 
       def self.authors
-        ["tumerorkun"]
+        ['tumerorkun']
       end
 
       def self.step_text
         nil
       end
 
-      def self.is_supported?(platform)
+      def self.is_supported?(_platform)
         true
       end
     end

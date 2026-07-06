@@ -1,0 +1,69 @@
+AllCops:
+  TargetRubyVersion: 3.4
+  Exclude:
+    - "node_modules/**/*"
+    - "vendor/**/*"
+    - "dist/**/*"
+    - ".bundle/**/*"
+    - ".git/**/*"
+    - "ios/Pods/**/*"
+
+# Fastfile often has very long blocks defining lanes
+Metrics/BlockLength:
+  Exclude:
+    - "fastlane/Fastfile"
+    - "fastlane/actions/**/*.rb"
+    - "fastlane/utils/**/*.rb"
+    - "ios/Podfile"
+    - "*.gemspec"
+
+Style/GlobalVars:
+  Enabled: false
+
+# Allow slightly longer lines
+Layout/LineLength:
+  Max: 200
+
+# Disable frozen string literal requirement for Fastlane scripts
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+# Disable documentation requirement for Fastlane scripts and actions
+Style/Documentation:
+  Enabled: false
+
+# Fastlane DSL often uses method calls without parentheses
+Style/MethodCallWithoutArgsParentheses:
+  Enabled: false
+
+# Allow different quote styles, but prefer single quotes
+Style/StringLiterals:
+  EnforcedStyle: single_quotes
+
+# Fastlane actions require `is_supported?` which breaks this rule
+Naming/PredicatePrefix:
+  Enabled: false
+
+# Relax method length for complex lanes
+Metrics/MethodLength:
+  Enabled: false
+
+# Relax ABC size for Fastlane actions and lanes
+Metrics/AbcSize:
+  Enabled: false
+
+# Ignore complexity metrics for Fastlane glue code
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/ModuleLength:
+  Enabled: false
+
+Metrics/ParameterLists:
+  Enabled: false

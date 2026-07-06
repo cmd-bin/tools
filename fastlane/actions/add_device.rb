@@ -9,7 +9,7 @@ module Fastlane
 
         result = other_action.setup(export_method: 'app-store', run_match: false)
         config = result[:config]
-        other_action.ipc_client(event_name: "Adding Device", payload: { start: true })
+        other_action.ipc_client(event_name: 'Adding Device', payload: { start: true })
         other_action.register_device(
           name: params[:device_name],
           udid: params[:udid],
@@ -17,7 +17,7 @@ module Fastlane
           team_id: config[:team_id],
           username: config[:match_username]
         )
-        other_action.ipc_client(event_name: "Added Device", payload: { end: true })
+        other_action.ipc_client(event_name: 'Added Device', payload: { end: true })
       end
 
       def self.description
@@ -25,7 +25,6 @@ module Fastlane
       end
 
       # Fastlane action API requires `available_options`.
-      # rubocop:disable Metrics/MethodLength
       def self.available_options
         [
           FastlaneCore::ConfigItem.new(
@@ -42,7 +41,6 @@ module Fastlane
           )
         ]
       end
-      # rubocop:enable Metrics/MethodLength
 
       def self.return_value
         'The result of the register_device action'
@@ -53,7 +51,6 @@ module Fastlane
       end
 
       # Fastlane action API requires `is_supported?`.
-      # rubocop:disable Naming/PredicatePrefix
       def self.is_supported?(platform)
         platform == :ios
       end

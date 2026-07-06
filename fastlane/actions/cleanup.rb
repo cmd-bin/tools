@@ -1,11 +1,14 @@
+# frozen_string_literal: true
+
 require 'fastlane/action'
 require 'fastlane_core'
-require_relative '../utils/config_helper'
+
+require_relative '../utils/index'
 
 module Fastlane
   module Actions
     class CleanupAction < Action
-      def self.run(params)
+      def self.run(_params)
         commons = ConfigHelper.common_config()
 
         output_path_to_delete = "#{commons[:root_dir_name]}/#{commons[:output_path]}"
@@ -19,26 +22,24 @@ module Fastlane
         end
 
         paths_to_delete.each do |path|
-          if File.exist?(path) && !commons[:keep_outputs]
-            UI.message("🗑️  Deleting generated file: #{path}...")
-            File.delete(path)
-            deleted_files << path
-          end
+          next unless File.exist?(path) && !commons[:keep_outputs]
+
+          UI.message("🗑️  Deleting generated file: #{path}...")
+          File.delete(path)
+          deleted_files << path
         end
-        
+
         if deleted_files.any?
           private_keys_dir = commons[:private_keys_path]
-          if Dir.exist?(private_keys_dir) && Dir.empty?(private_keys_dir)
-            FileUtils.rm_rf(private_keys_dir)
-          end
+          FileUtils.rm_rf(private_keys_dir) if Dir.exist?(private_keys_dir) && Dir.empty?(private_keys_dir)
           UI.success("✅  Cleanup completed. #{deleted_files.size} base64 generated file(s) removed.")
         else
-          UI.message("✅  Cleanup completed. No base64 generated files found to remove.")
+          UI.message('✅  Cleanup completed. No base64 generated files found to remove.')
         end
       end
 
       def self.description
-        "Deletes files created from base64 values during the setup phase"
+        'Deletes files created from base64 values during the setup phase'
       end
 
       def self.available_options
@@ -46,7 +47,7 @@ module Fastlane
       end
 
       def self.is_supported?(platform)
-        [:ios, :android].include?(platform)
+        %i[ios android].include?(platform)
       end
     end
   end

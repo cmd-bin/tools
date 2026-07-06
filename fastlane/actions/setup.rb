@@ -1,24 +1,24 @@
+# frozen_string_literal: true
+
 require 'fastlane/action'
 require 'fastlane_core'
 require 'xcodeproj'
-require_relative '../utils/config_helper'
-require_relative '../utils/file_helper'
-
+require_relative '../utils/index'
 
 module Fastlane
   module Actions
     class SetupAction < Action
-      @@setup_ios_result = nil
-      @@setup_android_result = nil
+      @setup_ios_result = nil
+      @setup_android_result = nil
 
       def self.run(params)
         platform = lane_context[SharedValues::PLATFORM_NAME]
 
         case platform
         when :ios
-          @@setup_ios_result ||= setup_ios(params)
+          @setup_ios_result ||= setup_ios(params)
         when :android
-          @@setup_android_result ||= setup_android(params)
+          @setup_android_result ||= setup_android(params)
         else
           UI.user_error!("Unsupported platform for setup: #{platform}")
         end
@@ -30,24 +30,24 @@ module Fastlane
         config = ConfigHelper.platform_config(platform: :ios, export_method: params[:export_method], is_ci: is_ci)
 
         other_action.setup_ci if ENV['CI']
-        other_action.clear_derived_data if ENV["CI"]
+        other_action.clear_derived_data if ENV['CI']
 
         match_type = config[:match_type]
 
         target_identifier_map = other_action.ipc_wrapper(
-          event_name: "Loading Targets",
-          end_event_name: "Targets loaded",
+          event_name: 'Loading Targets',
+          end_event_name: 'Targets loaded',
           action: proc do
             Xcodeproj::Project.open(config[:project]).native_targets.map do |target|
-              bundle_id = target.build_configurations.first.build_settings["PRODUCT_BUNDLE_IDENTIFIER"]
+              bundle_id = target.build_configurations.first.build_settings['PRODUCT_BUNDLE_IDENTIFIER']
               { name: target.name, bundle_id: bundle_id }
             end
           end
         )
 
         api_key = other_action.ipc_wrapper(
-          event_name: "Connecting to Apple Developer account",
-          end_event_name: "Connected to Apple Developer account",
+          event_name: 'Connecting to Apple Developer account',
+          end_event_name: 'Connected to Apple Developer account',
           action: proc do
             other_action.app_store_connect_api_key(
               key_id: config[:key_id],
@@ -62,15 +62,15 @@ module Fastlane
 
         if run_match
           other_action.ipc_wrapper(
-            event_name: "Matching certificates",
-            end_event_name: "Certificates Matched",
+            event_name: 'Matching certificates',
+            end_event_name: 'Certificates Matched',
             action: proc do
               other_action.match(
                 type: match_type,
                 app_identifier: target_identifier_map.map { |t| t[:bundle_id] },
                 username: config[:match_username],
                 clone_branch_directly: true,
-                storage_mode: "git",
+                storage_mode: 'git',
                 git_url: config[:match_git_url],
                 git_branch: config[:match_git_branch],
                 api_key: api_key,
@@ -104,8 +104,8 @@ module Fastlane
       def self.setup_android(params)
         is_ci = other_action.is_ci
         config = other_action.ipc_wrapper(
-          event_name: "Environment loading",
-          end_event_name: "Setup Completed",
+          event_name: 'Environment loading',
+          end_event_name: 'Setup Completed',
           action: proc do
             ConfigHelper.platform_config(platform: :android, export_method: params[:export_method], is_ci: is_ci)
           end
@@ -117,17 +117,17 @@ module Fastlane
       end
 
       def self.description
-        "Setup for iOS and Android"
+        'Setup for iOS and Android'
       end
 
       def self.available_options
         [
           FastlaneCore::ConfigItem.new(key: :export_method,
-                                       description: "Export method",
+                                       description: 'Export method',
                                        optional: true,
                                        type: String),
           FastlaneCore::ConfigItem.new(key: :run_match,
-                                       description: "Run match",
+                                       description: 'Run match',
                                        optional: true,
                                        is_string: false,
                                        type: Boolean)
@@ -135,7 +135,7 @@ module Fastlane
       end
 
       def self.is_supported?(platform)
-        [:ios, :android].include?(platform)
+        %i[ios android].include?(platform)
       end
     end
   end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'fastlane/action'
 require 'fastlane_core'
 require 'spaceship'
@@ -24,45 +26,45 @@ module Fastlane
         end
       end
 
-def self.create_app_record(bundle_id, name, sku, locale)
-  UI.message("🚀 Creating App Store Connect record for #{bundle_id}...")
-  
-  # Ensure the Bundle ID exists
-  res = Spaceship::ConnectAPI::BundleId.find(bundle_id)
-  UI.user_error!("Bundle ID #{bundle_id} not found!") unless res
+      def self.create_app_record(bundle_id, name, sku, locale)
+        UI.message("🚀 Creating App Store Connect record for #{bundle_id}...")
 
-  begin
-    # Use the high-level Spaceship::ConnectAPI::App.create helper.
-    # Passing the platforms array fixes the 'each' for nil error that occurred internally.
-    Spaceship::ConnectAPI::App.create(
-      name: name,
-      version_string: "1.0",
-      sku: sku || "#{bundle_id}_#{Time.now.to_i}", # Fallback unique SKU
-      primary_locale: locale || "en-US",
-      bundle_id: bundle_id,
-      platforms: [Spaceship::ConnectAPI::Platform::IOS]
-    )
-    UI.success("✅ App Store Connect record created successfully.")
-  rescue => e
-    UI.error("❌ Failed to create App Record: #{e.message}")
-  end
-end
+        # Ensure the Bundle ID exists
+        res = Spaceship::ConnectAPI::BundleId.find(bundle_id)
+        UI.user_error!("Bundle ID #{bundle_id} not found!") unless res
+
+        begin
+          # Use the high-level Spaceship::ConnectAPI::App.create helper.
+          # Passing the platforms array fixes the 'each' for nil error that occurred internally.
+          Spaceship::ConnectAPI::App.create(
+            name: name,
+            version_string: '1.0',
+            sku: sku || "#{bundle_id}_#{Time.now.to_i}", # Fallback unique SKU
+            primary_locale: locale || 'en-US',
+            bundle_id: bundle_id,
+            platforms: [Spaceship::ConnectAPI::Platform::IOS]
+          )
+          UI.success('✅ App Store Connect record created successfully.')
+        rescue StandardError => e
+          UI.error("❌ Failed to create App Record: #{e.message}")
+        end
+      end
 
       def self.delete_app_record(bundle_id)
         UI.message("🗑️ Searching for App Record: #{bundle_id}...")
-        
+
         # 1. Find the App
         app = Spaceship::ConnectAPI::App.find(bundle_id)
-        
+
         if app
           begin
             # 2. Delete the App Record
             # Per Apple rules: Only works if never approved or submitted
             Spaceship::ConnectAPI.tunes_request_client.delete("v1/apps/#{app.id}")
             UI.success("✅ Successfully deleted App Store Connect record for #{bundle_id}")
-          rescue => e
+          rescue StandardError => e
             UI.error("❌ Failed to delete App Record: #{e.message}")
-            UI.important("Note: If a build was ever uploaded, you must expire it in TestFlight first.")
+            UI.important('Note: If a build was ever uploaded, you must expire it in TestFlight first.')
           end
         else
           UI.important("⚠️ No App Store Connect record found for #{bundle_id}.")
@@ -71,25 +73,25 @@ end
 
       def self.available_options
         [
-          FastlaneCore::ConfigItem.new(key: :api_key, 
-                                      is_string: false, 
-                                      optional: false),
-          FastlaneCore::ConfigItem.new(key: :app_identifier, 
-                                      optional: false),
-          FastlaneCore::ConfigItem.new(key: :action, 
-                                      default_value: "create"),
-          FastlaneCore::ConfigItem.new(key: :app_name, 
-                                      optional: true),
-          FastlaneCore::ConfigItem.new(key: :sku, 
-                                      optional: true, 
-                                      description: "Unique SKU for the app"),
-          FastlaneCore::ConfigItem.new(key: :primary_locale, 
-                                      default_value: "en-US")
+          FastlaneCore::ConfigItem.new(key: :api_key,
+                                       is_string: false,
+                                       optional: false),
+          FastlaneCore::ConfigItem.new(key: :app_identifier,
+                                       optional: false),
+          FastlaneCore::ConfigItem.new(key: :action,
+                                       default_value: 'create'),
+          FastlaneCore::ConfigItem.new(key: :app_name,
+                                       optional: true),
+          FastlaneCore::ConfigItem.new(key: :sku,
+                                       optional: true,
+                                       description: 'Unique SKU for the app'),
+          FastlaneCore::ConfigItem.new(key: :primary_locale,
+                                       default_value: 'en-US')
         ]
       end
 
       def self.is_supported?(platform)
-        [:ios, :mac].include?(platform)
+        %i[ios mac].include?(platform)
       end
     end
   end

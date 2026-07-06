@@ -2,62 +2,56 @@
 
 opt_out_usage
 
-require_relative 'utils/config_helper'
-require_relative 'utils/file_helper'
-require_relative 'utils/github_helper'
+require_relative 'utils/index'
 
 DEFAULT_EXPORT_METHOD   = 'app-store'
 XCODEBUILD_FORMATTER    = 'xcbeautify --renderer github-actions'
 
 default_platform(:ios)
 
-after_all do |lane|
-  if $pbxproj_path && $pbxproj_backup
-    File.write($pbxproj_path, $pbxproj_backup)
-  end
+after_all do |_lane|
+  File.write($pbxproj_path, $pbxproj_backup) if $pbxproj_path && $pbxproj_backup
   cleanup
 end
 
-error do |lane, exception|
-  if $pbxproj_path && $pbxproj_backup
-    File.write($pbxproj_path, $pbxproj_backup)
-  end
+error do |_lane, _exception|
+  File.write($pbxproj_path, $pbxproj_backup) if $pbxproj_path && $pbxproj_backup
 end
 
 platform :ios do
   desc 'Push a new build to TestFlight'
 
   before_all do |lane|
-    pre_script = ConfigHelper.optional_env("BEFORE_ALL", default: nil)
+    pre_script = ConfigHelper.optional_env('BEFORE_ALL', default: nil)
     sh(pre_script) if pre_script
     Dir.chdir(ENV['CALLER_WORKSPACE']) do
       # "npm ls" başarılıysa (0 dönerse) sistem zaten güncel demektir.
-      ipc_client(event_name: "Node modules are checking", payload: { id: 0, start: true })
-      if system("npm ls > /dev/null 2>&1")
-        ipc_client(event_name: "Node modules are up to date", payload: { id: 0, end: true })
+      ipc_client(event_name: 'Node modules are checking', payload: { id: 0, start: true })
+      if system('npm ls > /dev/null 2>&1')
+        ipc_client(event_name: 'Node modules are up to date', payload: { id: 0, end: true })
       else
-        ipc_client(event_name: "Node modules are installing", payload: { id: 0 })
-        sh("npm ci")
-        ipc_client(event_name: "Node modules are installed", payload: { id: 0, end: true })
+        ipc_client(event_name: 'Node modules are installing', payload: { id: 0 })
+        sh('npm ci')
+        ipc_client(event_name: 'Node modules are installed', payload: { id: 0, end: true })
       end
     end
     if lane != :pod
-      Dir.chdir(File.join(ENV['CALLER_WORKSPACE'], "ios")) do
-        ipc_client(event_name: "Pods are checking", payload: { start: true })
-        if system("cmp -s Podfile.lock Pods/Manifest.lock")
-          ipc_client(event_name: "Pods are up to date", payload: { end: true })
+      Dir.chdir(File.join(ENV['CALLER_WORKSPACE'], 'ios')) do
+        ipc_client(event_name: 'Pods are checking', payload: { start: true })
+        if system('cmp -s Podfile.lock Pods/Manifest.lock')
+          ipc_client(event_name: 'Pods are up to date', payload: { end: true })
         else
-          ipc_client(event_name: "Pods are installing")
-          sh("bundle exec pod install")
-          ipc_client(event_name: "Pods are installed", payload: { end: true })
+          ipc_client(event_name: 'Pods are installing')
+          sh('bundle exec pod install')
+          ipc_client(event_name: 'Pods are installed', payload: { end: true })
         end
       end
     end
   end
 
   lane :pod do |options|
-    setup(export_method: options[:export_method] || "app-store")
-    Dir.chdir(File.join(ENV['CALLER_WORKSPACE'], "ios")) do
+    setup(export_method: options[:export_method] || 'app-store')
+    Dir.chdir(File.join(ENV['CALLER_WORKSPACE'], 'ios')) do
       update = options[:update] || false
       ipc_client(event_name: "Installing pods#{update ? ' with repo-update' : ''}")
       sh("bundle exec pod install #{update ? '--repo-update' : ''}")
@@ -120,7 +114,7 @@ platform :ios do
     )
 
     github_release = nil
-    if ENV["GITHUB_TOKEN"] && !ENV["GITHUB_TOKEN"].empty?
+    if ENV['GITHUB_TOKEN'] && !ENV['GITHUB_TOKEN'].empty?
       github_release = ipc_wrapper(
         event_name: 'Creating Github Release',
         end_event_name: 'Created Github Release',
@@ -135,7 +129,7 @@ platform :ios do
           )
         end,
         end_payload_proc: proc do |res|
-          { url: res["html_url"] }
+          { url: res['html_url'] }
         end
       )
     end
@@ -154,23 +148,23 @@ platform :ios do
 
     if config[:send_changelog_to_testflight]
       testflight_params[:changelog] = "#{release_notes}#{
-        github_release.nil? ? '' : "\nGithub Release(#{github_release["id"]}): #{github_release["html_url"]}"
+        github_release.nil? ? '' : "\nGithub Release(#{github_release['id']}): #{github_release['html_url']}"
       }"
     end
 
     ipc_wrapper(
-      event_name: "Uploading to Testflight",
-      end_event_name: "Uploaded to Testflight",
+      event_name: 'Uploading to Testflight',
+      end_event_name: 'Uploaded to Testflight',
       action: proc do
         upload_to_testflight(testflight_params)
       end
     )
 
-    clean_build_artifacts if ENV["CI"]
+    clean_build_artifacts if ENV['CI']
   end
 
   lane :adhoc do
-    result  = setup(export_method: "ad-hoc")
+    result  = setup(export_method: 'ad-hoc')
     config  = result[:config]
     FileHelper.decode_base64_to_file(
       config[:firebase_credentials_base64],
@@ -200,10 +194,9 @@ platform :ios do
       end
     )
 
-
     ipa_result = ipc_wrapper(
-      event_name: "Creating IPA",
-      end_event_name: "Created IPA",
+      event_name: 'Creating IPA',
+      end_event_name: 'Created IPA',
       action: proc do
         create_ipa(
           export_method: config[:export_method],
@@ -216,7 +209,6 @@ platform :ios do
       input_dir_path: config[:lane_output_directory],
       output_path: config[:zip_asset_path]
     )
-
     File.open(ENV['GITHUB_ENV'], 'a') { |f| f.puts("RELEASE_ASSET_PATH=#{config[:zip_asset_path]}") } if ENV['GITHUB_ENV']
 
     release_notes = GithubHelper.release_notes(
@@ -227,12 +219,11 @@ platform :ios do
       build_environment: config[:build_environment]
     )
 
-
     github_release = nil
-    if ENV["GITHUB_TOKEN"] && !ENV["GITHUB_TOKEN"].empty?
+    if ENV['GITHUB_TOKEN'] && !ENV['GITHUB_TOKEN'].empty?
       github_release = ipc_wrapper(
-        event_name: "Creating Github Release",
-        end_event_name: "Created Github Release",
+        event_name: 'Creating Github Release',
+        end_event_name: 'Created Github Release',
         action: proc do
           GithubHelper.create_release(
             platform: :ios,
@@ -244,17 +235,17 @@ platform :ios do
           )
         end,
         end_payload_proc: proc do |res|
-          { url: res["html_url"] }
+          { url: res['html_url'] }
         end
       )
     end
 
     release_notes_with_github = "#{release_notes.empty? ? '' : "#{release_notes}\n"}#{
-      github_release.nil? ? '' : "Github Release(#{github_release["id"]}): #{github_release["html_url"]}"
+      github_release.nil? ? '' : "Github Release(#{github_release['id']}): #{github_release['html_url']}"
     }"
-    release = ipc_wrapper(
-      event_name: "Uploading to Firebase App Distribution",
-      end_event_name: "Uploaded to Firebase App Distribution",
+    ipc_wrapper(
+      event_name: 'Uploading to Firebase App Distribution',
+      end_event_name: 'Uploaded to Firebase App Distribution',
       action: proc do
         firebase_app_distribution(
           app: config[:firebase_app_id],
@@ -277,7 +268,7 @@ platform :ios do
       end
     )
 
-    clean_build_artifacts if ENV["CI"]
+    clean_build_artifacts if ENV['CI']
   end
 
   lane :create_archive do |options|
@@ -290,7 +281,7 @@ platform :ios do
     version      = get_version_number(xcodeproj: config[:project], target: app_target[:name])
     build_number = get_build_number(xcodeproj: config[:project])
 
-    $pbxproj_path ||= File.join(config[:project], "project.pbxproj")
+    $pbxproj_path ||= File.join(config[:project], 'project.pbxproj')
     $pbxproj_backup ||= File.read($pbxproj_path)
 
     targets.each do |target|
@@ -331,7 +322,7 @@ platform :ios do
     {
       version: version,
       build_number: build_number,
-      archive_path: lane_context[SharedValues::XCODEBUILD_ARCHIVE],
+      archive_path: lane_context[SharedValues::XCODEBUILD_ARCHIVE]
     }
   end
 
@@ -343,9 +334,9 @@ platform :ios do
     output_dir   = options[:output_directory] || config[:ipa_output_directory]
 
     archive_info = Plist.parse_xml("#{archive_path}/Info.plist")
-    app_props    = archive_info["ApplicationProperties"]
-    version      = app_props["CFBundleShortVersionString"]
-    build_number = app_props["CFBundleVersion"]
+    app_props    = archive_info['ApplicationProperties']
+    version      = app_props['CFBundleShortVersionString']
+    build_number = app_props['CFBundleVersion']
 
     # Create IPA
     build_app(
@@ -392,32 +383,32 @@ platform :ios do
 end
 
 platform :android do
-  desc "Push a new build to Firebase App Distribution"
+  desc 'Push a new build to Firebase App Distribution'
 
-  before_all do |lane|
-    pre_script = ConfigHelper.optional_env("BEFORE_ALL", default: nil)
+  before_all do
+    pre_script = ConfigHelper.optional_env('BEFORE_ALL', default: nil)
     sh(pre_script) if pre_script
     Dir.chdir(ENV['CALLER_WORKSPACE']) do
       # "npm ls" başarılıysa (0 dönerse) sistem zaten güncel demektir.
-      ipc_client(event_name: "Node modules are checking", payload: { id: 0, start: true })
-      if system("npm ls > /dev/null 2>&1")
-        ipc_client(event_name: "Node modules are up to date", payload: { id: 0, end: true })
+      ipc_client(event_name: 'Node modules are checking', payload: { id: 0, start: true })
+      if system('npm ls > /dev/null 2>&1')
+        ipc_client(event_name: 'Node modules are up to date', payload: { id: 0, end: true })
       else
-        ipc_client(event_name: "Node modules are installing", payload: { id: 0 })
-        sh("npm ci")
-        ipc_client(event_name: "Node modules are installed", payload: { id: 0, end: true })
+        ipc_client(event_name: 'Node modules are installing', payload: { id: 0 })
+        sh('npm ci')
+        ipc_client(event_name: 'Node modules are installed', payload: { id: 0, end: true })
       end
     end
   end
 
   lane :internal do |options|
-    result        = setup(export_method: options[:export_method] || "aab")
+    result        = setup(export_method: options[:export_method] || 'aab')
     config        = result[:config]
     version_name  = android_get_version_name(gradle_file: config[:app_gradle_file_path])
 
     version_codes = google_play_track_version_codes(
       package_name: config[:app_identifier],
-      track: "internal",
+      track: 'internal',
       json_key: config[:play_store_credentials_path]
     )
 
@@ -441,12 +432,11 @@ platform :android do
     aab_path = lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH]
 
     FileHelper.zip_folder(
-      input_dir_path: config[:export_method] == "apk" ? File.dirname(apk_path) : File.dirname(aab_path),
+      input_dir_path: config[:export_method] == 'apk' ? File.dirname(apk_path) : File.dirname(aab_path),
       output_path: config[:zip_asset_path]
     )
 
     File.open(ENV['GITHUB_ENV'], 'a') { |f| f.puts("RELEASE_ASSET_PATH=#{config[:zip_asset_path]}") } if ENV['GITHUB_ENV']
-
 
     release_notes = GithubHelper.release_notes(
       cliff: config[:cliff],
@@ -456,12 +446,10 @@ platform :android do
       build_environment: config[:build_environment]
     )
 
-
-    github_release = nil
-    if ENV["GITHUB_TOKEN"] && !ENV["GITHUB_TOKEN"].empty?
-      github_release = ipc_wrapper(
-        event_name: "Creating Github Release",
-        end_event_name: "Created Github Release",
+    if ENV['GITHUB_TOKEN'] && !ENV['GITHUB_TOKEN'].empty?
+      ipc_wrapper(
+        event_name: 'Creating Github Release',
+        end_event_name: 'Created Github Release',
         payload: { id: 3 },
         action: proc do
           GithubHelper.create_release(
@@ -473,7 +461,7 @@ platform :android do
             upload_assets: [config[:zip_asset_path]]
           )
         end,
-        end_payload_proc: proc { |res| { url: res["html_url"] } }
+        end_payload_proc: proc { |res| { url: res['html_url'] } }
       )
     end
 
@@ -484,7 +472,7 @@ platform :android do
       json_key: config[:play_store_credentials_path]
     }
 
-    if config[:export_method] == "apk"
+    if config[:export_method] == 'apk'
       play_store_params[:apk] = apk_path
       play_store_params[:skip_upload_aab] = true
     else
@@ -493,8 +481,8 @@ platform :android do
     end
 
     ipc_wrapper(
-      event_name: "Uploading to Play Store",
-      end_event_name: "Uploaded to Play Store",
+      event_name: 'Uploading to Play Store',
+      end_event_name: 'Uploaded to Play Store',
       payload: { id: 4 },
       action: proc do
         upload_to_play_store(play_store_params)
@@ -503,14 +491,14 @@ platform :android do
   end
 
   lane :adhoc do |options|
-    result        = setup(export_method: options[:export_method] || "apk")
+    result        = setup(export_method: options[:export_method] || 'apk')
     config        = result[:config]
     FileHelper.decode_base64_to_file(
       config[:firebase_credentials_base64],
       config[:firebase_credentials_path]
     )
 
-    version_name  = android_get_version_name(gradle_file: config[:app_gradle_file_path])
+    version_name = android_get_version_name(gradle_file: config[:app_gradle_file_path])
 
     latest_release = firebase_app_distribution_get_latest_release(
       app: config[:firebase_app_id],
@@ -537,10 +525,9 @@ platform :android do
     aab_path = lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH]
 
     FileHelper.zip_folder(
-      input_dir_path: config[:export_method] == "apk" ? File.dirname(apk_path) : File.dirname(aab_path),
+      input_dir_path: config[:export_method] == 'apk' ? File.dirname(apk_path) : File.dirname(aab_path),
       output_path: config[:zip_asset_path]
     )
-
     File.open(ENV['GITHUB_ENV'], 'a') { |f| f.puts("RELEASE_ASSET_PATH=#{config[:zip_asset_path]}") } if ENV['GITHUB_ENV']
 
     release_notes = GithubHelper.release_notes(
@@ -551,12 +538,11 @@ platform :android do
       build_environment: config[:build_environment]
     )
 
-
-    github_release = nil
-    if ENV["GITHUB_TOKEN"] && !ENV["GITHUB_TOKEN"].empty?
+    # github_release = nil
+    if ENV['GITHUB_TOKEN'] && !ENV['GITHUB_TOKEN'].empty?
       github_release = ipc_wrapper(
-        event_name: "Creating Github Release",
-        end_event_name: "Created Github Release",
+        event_name: 'Creating Github Release',
+        end_event_name: 'Created Github Release',
         payload: { id: 3 },
         action: proc do
           GithubHelper.create_release(
@@ -568,31 +554,31 @@ platform :android do
             upload_assets: [config[:zip_asset_path]]
           )
         end,
-        end_payload_proc: proc { |res| { url: res["html_url"] } }
+        end_payload_proc: proc { |res| { url: res['html_url'] } }
       )
     end
 
     release_notes_with_github = "#{release_notes.empty? ? '' : "#{release_notes}\n"}#{
-      github_release.nil? ? '' : "Github Release(#{github_release["id"]}): #{github_release["html_url"]}"
+      github_release.nil? ? '' : "Github Release(#{github_release['id']}): #{github_release['html_url']}"
     }"
 
     firebase_app_distribution_params = {
       app: config[:firebase_app_id],
       service_credentials_file: config[:firebase_credentials_path],
       groups: config[:firebase_tester_group],
-      release_notes: release_notes_with_github,
+      release_notes: release_notes_with_github
     }
 
-    if config[:export_method] == "apk"
-      firebase_app_distribution_params[:android_artifact_type] = "APK"
+    if config[:export_method] == 'apk'
+      firebase_app_distribution_params[:android_artifact_type] = 'APK'
       firebase_app_distribution_params[:android_artifact_path] = apk_path
     else
-      firebase_app_distribution_params[:android_artifact_type] = "AAB"
+      firebase_app_distribution_params[:android_artifact_type] = 'AAB'
       firebase_app_distribution_params[:android_artifact_path] = aab_path
     end
-    release = ipc_wrapper(
-      event_name: "Uploading to Firebase App Distribution",
-      end_event_name: "Uploaded to Firebase App Distribution",
+    ipc_wrapper(
+      event_name: 'Uploading to Firebase App Distribution',
+      end_event_name: 'Uploaded to Firebase App Distribution',
       payload: { id: 4 },
       action: proc do
         firebase_app_distribution(firebase_app_distribution_params)
@@ -612,7 +598,7 @@ platform :android do
   end
 
   lane :create_bundle do |options|
-    result        = setup(export_method: options[:export_method] || "aab")
+    result        = setup(export_method: options[:export_method] || 'aab')
     config        = result[:config]
 
     gradle(
@@ -621,26 +607,26 @@ platform :android do
       print_command: false,
       project_dir: config[:project_dir],
       gradle_path: config[:gradle_path],
-      flags: "--build-cache --no-daemon",
+      flags: '--build-cache --no-daemon',
       properties: {
-        "android.injected.signing.store.file" => config[:key_store_path],
-        "android.injected.signing.store.password" => config[:key_store_password],
-        "android.injected.signing.key.alias" => config[:key_alias],
-        "android.injected.signing.key.password" => config[:key_password],
+        'android.injected.signing.store.file' => config[:key_store_path],
+        'android.injected.signing.store.password' => config[:key_store_password],
+        'android.injected.signing.key.alias' => config[:key_alias],
+        'android.injected.signing.key.password' => config[:key_password]
       },
-      system_properties:{
-        "org.gradle.caching" => "true",
-        "org.gradle.parallel" => "true",
-        "org.gradle.jvmargs" => "-Xmx8192m -XX:MaxMetaspaceSize=4096m",
+      system_properties: {
+        'org.gradle.caching' => 'true',
+        'org.gradle.parallel' => 'true',
+        'org.gradle.jvmargs' => '-Xmx8192m -XX:MaxMetaspaceSize=4096m'
       }
     )
     ipc_client(event_name: "Created #{config[:export_method].upcase} file")
   end
 end
 
-desc "Sync certificates and provisioning profiles"
+desc 'Sync certificates and provisioning profiles'
 lane :match_sync do |options|
-  FileHelper.read_env(env_path: options[:env_path] || File.join(ENV['GITHUB_WORKSPACE'], ".env.deploy"))
+  FileHelper.read_env(env_path: options[:env_path] || File.join(ENV['GITHUB_WORKSPACE'], '.env.deploy'))
   puts "env file is loaded: #{ENV['APPLE_KEY_ID']}"
   generate_apple_certs = options[:generate].to_s.strip.downcase == 'true'
   force = options[:force].to_s.strip.downcase == 'true'
@@ -654,12 +640,11 @@ lane :match_sync do |options|
     in_house: options[:in_house] || false
   )
 
-  app_identifier = ENV['APP_IDENTIFIER'] ? ENV['APP_IDENTIFIER'].split(",").map { |id| id.strip } : nil
-  app_identifier = options[:app_identifier].split(",").map { |id| id.strip } if options[:app_identifier]
+  app_identifier = (options[:app_identifier] || ENV['APP_IDENTIFIER'])&.split(',')&.map(&:strip)
 
   match_options = {
     # Profile type to sync. Docs default: "development".
-    type: options[:type] || "development",
+    type: options[:type] || 'development',
     # Extra cert types for macOS installers. Docs default: nil.
     additional_cert_types: nil,
     # Fetch only; do not create new certs/profiles. Docs default: false.
@@ -678,20 +663,20 @@ lane :match_sync do |options|
     # Apple ID username. Docs default: Appfile apple_dev_portal_id/apple_id.
     # username: ENV["MATCH_REPO_USERNAME"],
     # Developer Portal team id. Docs default: Appfile team_id.
-    team_id: ENV["APPLE_DEVELOPER_PORTAL_TEAM_ID"],
+    team_id: ENV['APPLE_DEVELOPER_PORTAL_TEAM_ID'],
     # Developer Portal team name. Docs default: Appfile team_name.
     team_name: nil,
 
     # Storage backend. Docs default: "git".
-    storage_mode: "git",
+    storage_mode: 'git',
     # Git repo URL that stores certificates. Required for git storage.
-    git_url: ENV["MATCH_REPO_URL"],
+    git_url: ENV['MATCH_REPO_URL'],
     # Git branch to use. Docs default: "master".
-    git_branch: ENV["MATCH_REPO_BRANCH"],
+    git_branch: ENV['MATCH_REPO_BRANCH'],
     # Git commit author name. Docs default: nil.
-    git_full_name: "NF Fastlane",
+    git_full_name: 'NF Fastlane',
     # Git commit author email. Docs default: nil.
-    git_user_email: ENV["MATCH_REPO_USERNAME"],
+    git_user_email: ENV['MATCH_REPO_USERNAME'],
     # Clone only the latest revision. Docs default: false.
     shallow_clone: false,
     # Clone only the target branch. Docs default: false.
@@ -700,11 +685,11 @@ lane :match_sync do |options|
     git_basic_authorization: nil,
     # Base64 bearer auth header for git access. Docs default: nil.
     git_bearer_authorization: nil,
-    # Deploy key path/content for git access. Docs default: nil.
-    git_private_key: FileHelper.decode_base64(ENV["MATCH_REPO_PRIVATE_KEY"]),
+    # Deploy key path/content for git access. Docs Default: nil.
+    git_private_key: FileHelper.decode_base64(ENV['MATCH_REPO_PRIVATE_KEY']),
 
     # Keychain to import certificates into. Docs default: "login.keychain".
-    keychain_name: "login.keychain",
+    keychain_name: 'login.keychain',
     # Keychain password, usually needed on new machines. Docs default: nil.
     keychain_password: nil,
 
@@ -727,7 +712,7 @@ lane :match_sync do |options|
     # Skip README generation in the cert repo. Docs default: false.
     skip_docs: false,
     # Provisioning profile platform. Docs default: current lane platform or "ios".
-    platform: "ios",
+    platform: 'ios',
     # Prefix Mac Catalyst identifiers for old Xcode projects. Docs default: false.
     derive_catalyst_app_identifier: false,
     # Deprecated managed capabilities template name. Docs default: nil.

@@ -3,6 +3,7 @@ import { tasks } from "@clack/prompts";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { exampleLog, descriptionLog } from "../../utils/logger.js";
+import { ensureRubyEnvironment } from "../../utils/ruby.js";
 
 export const init = (cli: CAC) => {
   const commandHandler = async (): Promise<void> => {
@@ -73,6 +74,13 @@ export const init = (cli: CAC) => {
           }
 
           return ".gitignore is already up to date.";
+        },
+      },
+      {
+        title: "Preparing Ruby Environment",
+        task: async (message) => {
+          const env = await ensureRubyEnvironment(process.env, true);
+          return "Ruby environment is ready.";
         },
       },
     ]);
