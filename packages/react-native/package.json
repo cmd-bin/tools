@@ -1,6 +1,6 @@
 {
   "name": "@cmd-bin/react-native",
-  "version": "1.5.0-next.2",
+  "version": "1.5.0",
   "license": "Apache-2.0",
   "author": "Orkun Tumer <orkun@appibara.com>",
   "type": "module",
