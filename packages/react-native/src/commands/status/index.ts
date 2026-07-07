@@ -8,7 +8,7 @@ export const status = (cli: CAC) => {
   const commandHandler = (): void => {
     log.message(`${cli.name} is active.`, { symbol: "✅" });
     log.message(`Version: ${pkg.version}`, { symbol: "🚀", spacing: 0 });
-    log.message(`Author: ${pkg.author || 'cmd-bin'}`, { symbol: "👤", spacing: 0 });
+    log.message(`Author: ${pkg.author || 'cmd-bin'}`, { symbol: "👤 ", spacing: 0 });
     log.message(`Runtime: ${getRuntime()}`, { symbol: "🛠️ ", spacing: 0 });
   };
 
