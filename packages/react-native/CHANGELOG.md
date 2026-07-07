@@ -1,3 +1,13 @@
+## 1.5.0-next.1 (2026-07-07)
+
+### 🩹 Fixes
+
+- tag creation ([ea0844a](https://github.com/cmd-bin/react-native/commit/ea0844a))
+
+### ❤️ Thank You
+
+- Orkun Tumer @tumerorkun
+
 ## 1.5.0-next.0 (2026-07-07)
 
 ### 🚀 Features
