@@ -13,7 +13,7 @@
   },
   "types": "./dist/index.d.mts",
   "repository": {
-    "url": "git+https://github.com/cmd-bin/react-native.git"
+    "url": "git+https://github.com/cmd-bin/tools.git"
   },
   "scripts": {
     "build": "tsdown",

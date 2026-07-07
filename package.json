@@ -1,5 +1,5 @@
 {
-  "name": "react-native-monorepo",
+  "name": "cmd-bin-tools",
   "private": true,
   "workspaces": [
     "packages/*"
