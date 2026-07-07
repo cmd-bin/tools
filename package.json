@@ -1,29 +1,14 @@
 {
-  "name": "@cmd-bin/react-native",
-  "version": "0.0.0",
-  "license": "Apache-2.0",
-  "type": "module",
-  "engines": {
-    "node": ">=24"
-  },
-  "bin": "./dist/index.mjs",
-  "repository": {
-    "url": "git+https://github.com/cmd-bin/react-native.git"
-  },
+  "name": "react-native-monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "build": "tsdown",
-    "build-watch": "tsdown --watch"
-  },
-  "dependencies": {
-    "@clack/prompts": "^1.6.0",
-    "cac": "^7.0.0",
-    "dotenv": "^17.4.2",
-    "picocolors": "^1.1.1"
+    "build": "npm run build --workspaces"
   },
   "devDependencies": {
-    "@semantic-release/exec": "^7.1.0",
-    "@types/node": "^26.0.0",
-    "tsdown": "^0.22.3",
-    "typescript": "^6.0.3"
+    "@nx/js": "^23.0.1",
+    "nx": "^23.0.1"
   }
 }
