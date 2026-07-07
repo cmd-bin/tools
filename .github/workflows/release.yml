@@ -36,7 +36,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npx nx release --yes
+        run: |
+          CURRENT_VERSION=$(node -e "console.log(require('./packages/react-native/package.json').version)")
+          if [[ "$CURRENT_VERSION" == *"-next."* ]]; then
+            # Merge from next branch! Graduate the prerelease (e.g., 1.5.0-next.2 -> 1.5.0)
+            TARGET_VERSION=$(echo "$CURRENT_VERSION" | cut -d'-' -f1)
+            npx nx release $TARGET_VERSION --yes
+          else
+            # Normal push to main. Use standard conventional commits.
+            npx nx release --yes
+          fi
 
       - name: Release (Next)
         if: github.ref == 'refs/heads/next'
