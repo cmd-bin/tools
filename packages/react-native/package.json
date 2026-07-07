@@ -2,6 +2,7 @@
   "name": "@cmd-bin/react-native",
   "version": "1.4.1",
   "license": "Apache-2.0",
+  "author": "Orkun Tumer <orkun@appibara.com>",
   "type": "module",
   "main": "./dist/index.mjs",
   "engines": {
