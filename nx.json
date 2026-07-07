@@ -7,8 +7,15 @@
     },
     "changelog": {
       "workspaceChangelog": false,
-      "projectChangelogs": true,
+      "projectChangelogs": {
+        "createRelease": "github"
+      },
       "automaticFromRef": true
+    },
+    "git": {
+      "commit": true,
+      "tag": true,
+      "push": true
     }
   },
   "analytics": false

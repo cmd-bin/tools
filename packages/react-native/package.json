@@ -15,7 +15,8 @@
   },
   "scripts": {
     "build": "tsdown",
-    "build-watch": "tsdown --watch"
+    "build-watch": "tsdown --watch",
+    "prepublishOnly": "npm run build && npm pkg fix"
   },
   "dependencies": {
     "@clack/prompts": "^1.7.0",
