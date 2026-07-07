@@ -33,8 +33,19 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
       - name: Build
         run: npm run build && npm pkg fix --workspaces
-      - name: Release
+      - name: Release (Main)
+        if: github.ref == 'refs/heads/main'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npx nx release --yes
+
+      - name: Release (Next)
+        if: github.ref == 'refs/heads/next'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          npx nx release version --yes --preid next
+          npx nx release changelog --yes
+          npx nx release publish --yes --tag next
