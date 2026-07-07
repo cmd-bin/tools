@@ -1,3 +1,7 @@
+## 1.5.0-next.2 (2026-07-07)
+
+This was a version bump only for @cmd-bin/react-native to align it with other projects, there were no code changes.
+
 ## 1.5.0-next.1 (2026-07-07)
 
 ### 🩹 Fixes
