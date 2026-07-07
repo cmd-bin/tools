@@ -37,7 +37,7 @@ module FileHelper
 
     Fastlane::UI.message("Zipped #{input_dir_path} -> #{output_path}")
     output_path
-  end.
+  end
 
   def self.read_env(env_path: nil)
     env_path = File.expand_path('../../.env', __dir__) if env_path.nil?
