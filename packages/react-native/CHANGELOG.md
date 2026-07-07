@@ -1,20 +1,3 @@
-## 1.6.0 (2026-07-07)
-
-### 🚀 Features
-
-- adds author to status ([a625ab0](https://github.com/cmd-bin/tools/commit/a625ab0))
-
-### 🩹 Fixes
-
-- recover readme ([54803b9](https://github.com/cmd-bin/tools/commit/54803b9))
-- spacing in author log ([8d137df](https://github.com/cmd-bin/tools/commit/8d137df))
-- tag creation ([ea0844a](https://github.com/cmd-bin/tools/commit/ea0844a))
-- git release ([1b876c9](https://github.com/cmd-bin/tools/commit/1b876c9))
-
-### ❤️ Thank You
-
-- Orkun Tumer @tumerorkun
-
 ## 1.5.1 (2026-07-07)
 
 ### 🩹 Fixes
