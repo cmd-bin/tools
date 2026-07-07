@@ -1,3 +1,13 @@
+## 1.5.1 (2026-07-07)
+
+### 🩹 Fixes
+
+- spacing in author log ([8d137df](https://github.com/cmd-bin/react-native/commit/8d137df))
+
+### ❤️ Thank You
+
+- Orkun Tumer @tumerorkun
+
 ## 1.5.0 (2026-07-07)
 
 ### 🚀 Features
