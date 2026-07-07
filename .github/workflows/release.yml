@@ -46,6 +46,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          npx nx release version --yes --preid next
-          npx nx release changelog --yes
+          npx nx release version --preid next
+          npx nx release changelog
           npx nx release publish --yes --tag next
