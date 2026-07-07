@@ -10,20 +10,6 @@
  * ```bash
  * # Run via npx
  * npx jsr @cmd-bin/react-native status
- *
- * # Run via Bun
- * bunx jsr @cmd-bin/react-native status
- *
- * # Run via Deno
- * deno run -A jsr:@cmd-bin/react-native status
- * ```
- *
- * @example API Usage
- * ```ts
- * import { run } from "@cmd-bin/react-native";
- *
- * // Execute the CLI with custom arguments
- * run(["node", "bin.js", "status"]);
  * ```
  *
  * @module
