@@ -1,4 +1,4 @@
-import pc from "picocolors";
+import pc from 'picocolors';
 
 export function formatDuration(ms: number) {
   const roundedMs = Math.round(ms);
@@ -13,7 +13,7 @@ export function formatDuration(ms: number) {
 
 export const exampleLog = (text: string) => {
   return (
-    pc.dim(pc.white(`  $ npx `)) + pc.magenta(text.replace("$", "").trim())
+    pc.dim(pc.white(`  $ npx `)) + pc.magenta(text.replace('$', '').trim())
   );
 };
 

@@ -1,12 +1,12 @@
-import { getWorkspaceEnv } from "./workspace_env.js";
-import { spawnProcess, registerProcessSignals } from "./process.js";
-import pc from "picocolors";
-import path from "node:path";
+import { getWorkspaceEnv } from './workspace_env.js';
+import { spawnProcess, registerProcessSignals } from './process.js';
+import pc from 'picocolors';
+import path from 'node:path';
 // import { IpcServer } from "../../utils/ipc_server.js";
-import { formatDuration } from "./logger.js";
-import { ensureRubyEnvironment } from "./ruby.js";
-import { spinner, log } from "@clack/prompts";
-import { spawnSync } from "node:child_process";
+import { formatDuration } from './logger.js';
+import { ensureRubyEnvironment } from './ruby.js';
+import { spinner, log } from '@clack/prompts';
+import { spawnSync } from 'node:child_process';
 
 const Spinner = spinner();
 
@@ -18,7 +18,7 @@ export async function run(
 ) {
   const code = (await spawnProcess(command, args, {
     cwd: cwd ?? env.FASTLANE_DIR,
-    stdio: env.NO_LOGS ? "ignore" : "pipe",
+    stdio: env.NO_LOGS ? 'ignore' : 'pipe',
     env,
   })) as number;
   if (code !== 0) process.exit(code);
@@ -30,10 +30,10 @@ export async function runFastlane(
 ) {
   if (fastlaneArgs.length === 0)
     throw new Error(
-      "Fastlane arguments are required. Example: actions ios adhoc",
+      'Fastlane arguments are required. Example: actions ios adhoc',
     );
 
-  await run("bundle", ["exec", "fastlane", ...fastlaneArgs], env);
+  await run('bundle', ['exec', 'fastlane', ...fastlaneArgs], env);
 }
 
 export async function runBundle(
@@ -44,7 +44,7 @@ export async function runBundle(
   const env = await ensureRubyEnvironment(
     baseEnv as Record<string, string | undefined>,
   );
-  await run("bundle", bundleArgs, env);
+  await run('bundle', bundleArgs, env);
 }
 
 async function checkBundle(
@@ -54,9 +54,9 @@ async function checkBundle(
     const env = await ensureRubyEnvironment(
       getWorkspaceEnv(baseEnv) as Record<string, string | undefined>,
     );
-    const code = await spawnProcess("bundle", ["check"], {
+    const code = await spawnProcess('bundle', ['check'], {
       cwd: env.FASTLANE_DIR,
-      stdio: "ignore",
+      stdio: 'ignore',
       env,
     });
     return code === 0;
@@ -84,35 +84,35 @@ export async function runCommand(
   });
 
   try {
-    let timeString = new Date().toTimeString().split(" ")[0];
+    let timeString = new Date().toTimeString().split(' ')[0];
     let startTimer = performance.now();
     Spinner.start(
-      pc.dim(pc.gray(`(${timeString})`)) + " 📦" + " Bundle gem check",
+      pc.dim(pc.gray(`(${timeString})`)) + ' 📦' + ' Bundle gem check',
     );
 
     const isBundleReady = await checkBundle(env);
-    timeString = new Date().toTimeString().split(" ")[0];
+    timeString = new Date().toTimeString().split(' ')[0];
     // let [duration, stopFn, Spinner] = stopAnim();
 
     if (isBundleReady) {
       Spinner.stop(
         pc.dim(pc.gray(`(${timeString})`)) +
-          " " +
+          ' ' +
           pc.green(
             `✅  Bundle gems are ready. (${pc.bold(formatDuration(performance.now() - startTimer))})`,
           ),
       );
     } else if (!isBundleReady) {
-      timeString = new Date().toTimeString().split(" ")[0];
+      timeString = new Date().toTimeString().split(' ')[0];
       Spinner.message(
-        pc.dim(pc.gray(`(${timeString})`)) + " 📦" + ` Bundle gem install`,
+        pc.dim(pc.gray(`(${timeString})`)) + ' 📦' + ` Bundle gem install`,
       );
       startTimer = performance.now();
-      await run("bundle", ["install"], env);
-      timeString = new Date().toTimeString().split(" ")[0];
+      await run('bundle', ['install'], env);
+      timeString = new Date().toTimeString().split(' ')[0];
       Spinner.stop(
         pc.dim(pc.gray(`(${timeString})`)) +
-          " " +
+          ' ' +
           pc.green(
             `✅  Bundle gem install completed. (${pc.bold(formatDuration(performance.now() - startTimer))})`,
           ),
@@ -120,26 +120,26 @@ export async function runCommand(
     }
 
     // Print the actual Ruby being used so the user can verify
-    const rubyPathCheck = spawnSync("which", ["ruby"], {
+    const rubyPathCheck = spawnSync('which', ['ruby'], {
       env: env as NodeJS.ProcessEnv,
-      encoding: "utf-8",
+      encoding: 'utf-8',
     }).stdout.trim();
     log.info(pc.cyan(`🔍  Using Ruby at: ${rubyPathCheck}`));
 
-    timeString = new Date().toTimeString().split(" ")[0];
+    timeString = new Date().toTimeString().split(' ')[0];
     log.info(
       pc.dim(pc.gray(`(${timeString})`)) +
-        " " +
-        "🚀  [Fastlane]: process started",
+        ' ' +
+        '🚀  [Fastlane]: process started',
     );
     const fastlaneStartTime = performance.now();
 
     await runFastlane(args, env);
     // [duration, stopFn] = stopAnim();
-    timeString = new Date().toTimeString().split(" ")[0];
+    timeString = new Date().toTimeString().split(' ')[0];
     log.success(
       pc.dim(pc.gray(`(${timeString})`)) +
-        " " +
+        ' ' +
         pc.green(
           `✅  Fastlane process completed. (${pc.bold(formatDuration(performance.now() - fastlaneStartTime))})`,
         ),

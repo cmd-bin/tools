@@ -1,15 +1,19 @@
 {
-  "name": "@cmd-bin/react-native",
-  "version": "1.7.1",
-  "license": "Apache-2.0",
+  "name": "@cmd-bin/kokono",
+  "version": "1.0.0",
+  "description": "Kokono CLI tool for sending notifications",
   "author": "Orkun Tumer <orkun@appibara.com>",
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "./dist/index.mjs",
   "engines": {
     "node": ">=24"
   },
   "bin": {
-    "react-native": "dist/index.mjs"
+    "kokono": "dist/index.mjs"
   },
   "types": "./dist/index.d.mts",
   "repository": {
@@ -21,9 +25,6 @@
     "prepublishOnly": "npm run build && npm pkg fix"
   },
   "dependencies": {
-    "@clack/prompts": "^1.7.0",
-    "cac": "^7.0.0",
-    "dotenv": "^17.4.2",
-    "picocolors": "^1.1.1"
+    "cac": "^7.0.0"
   }
 }

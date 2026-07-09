@@ -1,16 +1,16 @@
-import { spawn } from "node:child_process";
-import { log } from "@clack/prompts";
-import { S } from "./ipc_server.js";
+import { spawn } from 'node:child_process';
+import { log } from '@clack/prompts';
+import { S } from './ipc_server.js';
 
 export function registerProcessSignals(cleanupFn: () => void) {
-  process.on("exit", cleanupFn);
-  process.on("SIGINT", cleanupFn);
-  process.on("SIGTERM", cleanupFn);
+  process.on('exit', cleanupFn);
+  process.on('SIGINT', cleanupFn);
+  process.on('SIGTERM', cleanupFn);
 
   return () => {
-    process.removeListener("exit", cleanupFn);
-    process.removeListener("SIGINT", cleanupFn);
-    process.removeListener("SIGTERM", cleanupFn);
+    process.removeListener('exit', cleanupFn);
+    process.removeListener('SIGINT', cleanupFn);
+    process.removeListener('SIGTERM', cleanupFn);
   };
 }
 
@@ -24,12 +24,12 @@ export async function spawnProcess(
 
     const killChild = () => {
       S.clear();
-      if (!child.killed) child.kill("SIGTERM");
+      if (!child.killed) child.kill('SIGTERM');
     };
 
     if (child.stdout) {
-      child.stdout.on("data", (data) => {
-        const lines = data.toString().split("\n");
+      child.stdout.on('data', (data) => {
+        const lines = data.toString().split('\n');
         for (let i = 0; i < lines.length; i++) {
           if (lines[i].trim() || i !== lines.length - 1) {
             log.message(lines[i]);
@@ -39,8 +39,8 @@ export async function spawnProcess(
     }
 
     if (child.stderr) {
-      child.stderr.on("data", (data) => {
-        const lines = data.toString().split("\n");
+      child.stderr.on('data', (data) => {
+        const lines = data.toString().split('\n');
         for (let i = 0; i < lines.length; i++) {
           if (lines[i].trim() || i !== lines.length - 1) {
             log.message(lines[i], { spacing: 0 });
@@ -51,13 +51,13 @@ export async function spawnProcess(
 
     const cleanupListeners = registerProcessSignals(killChild);
 
-    child.on("error", (err) => {
+    child.on('error', (err) => {
       S.error(err.message);
       cleanupListeners();
       reject(err);
     });
 
-    child.on("exit", (code) => {
+    child.on('exit', (code) => {
       if (code !== 0 && code !== null)
         S.error(`Process exited with code ${code}`);
       cleanupListeners();
@@ -70,11 +70,11 @@ function isTruthyEnv(val: string | undefined | null) {
   if (val === undefined || val === null) return false;
   const clean = val.trim().toLowerCase();
   return (
-    clean !== "" &&
-    clean !== "false" &&
-    clean !== "0" &&
-    clean !== "off" &&
-    clean !== "no"
+    clean !== '' &&
+    clean !== 'false' &&
+    clean !== '0' &&
+    clean !== 'off' &&
+    clean !== 'no'
   );
 }
 
@@ -91,15 +91,15 @@ export function isCi() {
 
   // Check other common CI env variables
   const ciIndicators = [
-    "GITHUB_ACTIONS",
-    "JENKINS_URL",
-    "TRAVIS",
-    "CIRCLECI",
-    "GITLAB_CI",
-    "BITRISE_IO",
-    "TF_BUILD",
-    "BUDDY",
-    "APPVEYOR",
+    'GITHUB_ACTIONS',
+    'JENKINS_URL',
+    'TRAVIS',
+    'CIRCLECI',
+    'GITLAB_CI',
+    'BITRISE_IO',
+    'TF_BUILD',
+    'BUDDY',
+    'APPVEYOR',
   ];
 
   return ciIndicators.some((key) => isTruthyEnv(process.env[key]));

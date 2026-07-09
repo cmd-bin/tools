@@ -1,17 +1,17 @@
-import { clearBuilds } from "../../utils/clear_builds.js";
-import { runCommand } from "../../utils/run.js";
-import { type CAC } from "cac";
-import { withIpcServer } from "../../utils/ipc_server.js";
-import { withEnv } from "../../utils/load_deploy_env.js";
-import { exampleLog, descriptionLog } from "../../utils/logger.js";
+import { clearBuilds } from '../../utils/clear_builds.js';
+import { runCommand } from '../../utils/run.js';
+import { type CAC } from 'cac';
+import { withIpcServer } from '../../utils/ipc_server.js';
+import { withEnv } from '../../utils/load_deploy_env.js';
+import { exampleLog, descriptionLog } from '../../utils/logger.js';
 
 export const fastlane = (cli: CAC) => {
   const commandHandler: (...args: any[]) => void = withEnv(
     withIpcServer(async (args, options) => {
-      const isAndroid = args.includes("android");
+      const isAndroid = args.includes('android');
 
       try {
-        if (options.clean) await clearBuilds(isAndroid ? "android" : "ios");
+        if (options.clean) await clearBuilds(isAndroid ? 'android' : 'ios');
         await runCommand(args, options);
       } catch (e: unknown) {
         if (e instanceof Error) console.error(e.message);
@@ -21,18 +21,18 @@ export const fastlane = (cli: CAC) => {
   );
   cli
     .command(
-      "run <...fastlaneArgs>",
+      'run <...fastlaneArgs>',
       descriptionLog(
-        "Execute Fastlane commands within the configured Ruby environment",
+        'Execute Fastlane commands within the configured Ruby environment',
       ),
     )
     .option(
-      "-p, --production",
-      descriptionLog("Use production environment variables (_PROD suffix)"),
+      '-p, --production',
+      descriptionLog('Use production environment variables (_PROD suffix)'),
     )
     .option(
-      "--clean",
-      descriptionLog("Clean build directories (android/ios) before execution"),
+      '--clean',
+      descriptionLog('Clean build directories (android/ios) before execution'),
     )
     .example(exampleLog(`${globalThis._constants.PACKAGE_NAME} run ios adhoc`))
     .example(

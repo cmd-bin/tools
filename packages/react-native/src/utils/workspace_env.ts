@@ -1,6 +1,6 @@
-import { execSync } from "node:child_process";
-import path from "node:path";
-import os from "node:os";
+import { execSync } from 'node:child_process';
+import path from 'node:path';
+import os from 'node:os';
 
 type ENV = Record<string, string> & {
   BUILD_ENVIRONMENT: string;
@@ -41,12 +41,12 @@ export function getWorkspaceEnv(options: Record<string, unknown> = {}): ENV {
   const fastlaneDir = globalThis._constants.FASTLANE_DIR;
   const execOptions = { cwd: callerWorkspace };
   const remoteOriginUrl = execSync(
-    "git config --get remote.origin.url",
+    'git config --get remote.origin.url',
     execOptions,
   )
     .toString()
     .trim();
-  const currentBranch = execSync("git rev-parse --abbrev-ref HEAD", execOptions)
+  const currentBranch = execSync('git rev-parse --abbrev-ref HEAD', execOptions)
     .toString()
     .trim();
 
@@ -55,14 +55,14 @@ export function getWorkspaceEnv(options: Record<string, unknown> = {}): ENV {
   )?.[2];
 
   if (!githubRepository)
-    throw new Error("Failed to get repository name from remote origin url");
+    throw new Error('Failed to get repository name from remote origin url');
 
-  const buildType = options.production ? "PROD" : "DEV";
+  const buildType = options.production ? 'PROD' : 'DEV';
 
   const env = {
     // Default Fastlane environment variables
     ...process.env,
-    BUILD_ENVIRONMENT: options.production ? "production" : "development",
+    BUILD_ENVIRONMENT: options.production ? 'production' : 'development',
     SCHEME: process.env.SCHEME || process.env[`SCHEME_${buildType}`],
     BEFORE_ALL:
       process.env.BEFORE_ALL || process.env[`BEFORE_ALL_${buildType}`],
@@ -83,28 +83,28 @@ export function getWorkspaceEnv(options: Record<string, unknown> = {}): ENV {
     GITHUB_REPOSITORY: process.env.GITHUB_REPOSITORY || githubRepository,
     GITHUB_WORKSPACE: process.env.GITHUB_WORKSPACE || callerWorkspace,
     WORKSPACE_PATH:
-      process.env.WORKSPACE_PATH || path.join(callerWorkspace, "ios"),
+      process.env.WORKSPACE_PATH || path.join(callerWorkspace, 'ios'),
     ANDROID_PROJECT_PATH:
-      process.env.ANDROID_PROJECT_PATH || path.join(callerWorkspace, "android"),
+      process.env.ANDROID_PROJECT_PATH || path.join(callerWorkspace, 'android'),
 
     BUNDLE_GEMFILE:
-      process.env.BUNDLE_GEMFILE || path.join(fastlaneDir, "Gemfile"),
+      process.env.BUNDLE_GEMFILE || path.join(fastlaneDir, 'Gemfile'),
     BUNDLE_PATH:
       process.env.BUNDLE_PATH ||
-      path.join(os.homedir(), ".cmd-bin", "react-native", "vendor", "bundle"),
+      path.join(os.homedir(), '.cmd-bin', 'react-native', 'vendor', 'bundle'),
     BUNDLE_FORCE_RUBY_PLATFORM:
-      process.env.BUNDLE_FORCE_RUBY_PLATFORM || "true",
-    FASTLANE_FASTFILE: path.join(fastlaneDir, "Fastfile"),
+      process.env.BUNDLE_FORCE_RUBY_PLATFORM || 'true',
+    FASTLANE_FASTFILE: path.join(fastlaneDir, 'Fastfile'),
 
     // Scripts environment variables
     CALLER_WORKSPACE: callerWorkspace,
     FASTLANE_DIR: fastlaneDir,
     FASTLANE_HIDE_PLUGINS_TABLE: true,
-    NO_LOGS: process.env.NO_LOGS !== "false",
-    KEEP_OUTPUTS: process.env.KEEP_OUTPUTS === "true",
+    NO_LOGS: process.env.NO_LOGS !== 'false',
+    KEEP_OUTPUTS: process.env.KEEP_OUTPUTS === 'true',
 
     // Flags for build steps
-    USE_FRAMEWORKS: process.env.USE_FRAMEWORKS || "static",
+    USE_FRAMEWORKS: process.env.USE_FRAMEWORKS || 'static',
   } as ENV;
 
   WORKSPACE_ENV = env;

@@ -1,25 +1,25 @@
-import net from "node:net";
-import path from "node:path";
-import os from "node:os";
-import fs from "node:fs";
-import pc from "picocolors";
-import { EventEmitter } from "node:events";
-import crypto from "node:crypto";
-import { getWorkspaceEnv } from "./workspace_env.js";
-import { spinner, log, taskLog, stream } from "@clack/prompts";
+import net from 'node:net';
+import path from 'node:path';
+import os from 'node:os';
+import fs from 'node:fs';
+import pc from 'picocolors';
+import { EventEmitter } from 'node:events';
+import crypto from 'node:crypto';
+import { getWorkspaceEnv } from './workspace_env.js';
+import { spinner, log, taskLog, stream } from '@clack/prompts';
 
 export const S = spinner({
-  indicator: "dots",
-  cancelMessage: "",
+  indicator: 'dots',
+  cancelMessage: '',
 });
 type Message = {
   event: string;
   payload?: Record<string, unknown> & { list?: Array<Record<string, string>> };
 };
 
-const defaultMessageLogger = (msg: Message, group = "Fastlane") => {
+const defaultMessageLogger = (msg: Message, group = 'Fastlane') => {
   if (msg.event) {
-    const timeString = new Date().toTimeString().split(" ")[0];
+    const timeString = new Date().toTimeString().split(' ')[0];
     const message = `${pc.dim(pc.gray(`(${timeString})`))} ${pc.dim(pc.cyan(`⚡  [${group}]:`))} ${pc.white(msg.event)}`;
     if (msg.payload?.start) {
       S.start(message);
@@ -32,10 +32,10 @@ const defaultMessageLogger = (msg: Message, group = "Fastlane") => {
     if (msg.payload?.list) {
       let list = [];
       for (const item of msg.payload?.list ?? []) {
-        let str = "";
+        let str = '';
         Object.entries(item).forEach(
           ([key, value]: [string, string], index: number) => {
-            str += `${pc.dim(key + ":")} ${pc.green(value)}${index === Object.keys(item).length - 1 ? "" : " | "}`;
+            str += `${pc.dim(key + ':')} ${pc.green(value)}${index === Object.keys(item).length - 1 ? '' : ' | '}`;
           },
         );
         list.push(str);
@@ -52,7 +52,7 @@ export class IpcServer extends EventEmitter {
   socketPath: string;
   server: net.Server | null;
 
-  constructor(env: Record<string, unknown>, group = "Fastlane") {
+  constructor(env: Record<string, unknown>, group = 'Fastlane') {
     super();
     this.env = env;
     this.group = group;
@@ -63,7 +63,7 @@ export class IpcServer extends EventEmitter {
     );
     this.server = null;
     this.on(
-      "message",
+      'message',
       (msg: { event: string; payload: Record<string, unknown> }) =>
         defaultMessageLogger(msg, this.group),
     );
@@ -79,17 +79,17 @@ export class IpcServer extends EventEmitter {
       }
 
       this.server = net.createServer((client) => {
-        let buffer = "";
-        client.on("data", (data) => {
+        let buffer = '';
+        client.on('data', (data) => {
           buffer += data.toString();
-          const parts = buffer.split("\n");
-          buffer = parts.pop() ?? ""; // Incomplete part stays in buffer
+          const parts = buffer.split('\n');
+          buffer = parts.pop() ?? ''; // Incomplete part stays in buffer
 
           for (const part of parts) {
             if (part.trim()) {
               try {
                 const event = JSON.parse(part);
-                this.emit("message", event);
+                this.emit('message', event);
               } catch (e) {
                 // Ignore parse errors
               }
@@ -98,7 +98,7 @@ export class IpcServer extends EventEmitter {
         });
       });
 
-      this.server.on("error", reject);
+      this.server.on('error', reject);
 
       this.server.listen(this.socketPath, () => {
         this.env.NF_IPC_SOCKET = this.socketPath;

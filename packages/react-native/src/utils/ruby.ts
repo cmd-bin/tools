@@ -1,29 +1,29 @@
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import https from "node:https";
-import { spawnSync } from "node:child_process";
-import pc from "picocolors";
-import { spinner } from "@clack/prompts";
-import os from "node:os";
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import https from 'node:https';
+import { spawnSync } from 'node:child_process';
+import pc from 'picocolors';
+import { spinner } from '@clack/prompts';
+import os from 'node:os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Bulletproof pkgRoot detection (works whether bundled in dist/, or unbundled in src/utils/)
-const pkgRoot = fs.existsSync(path.join(__dirname, "../package.json"))
-  ? path.join(__dirname, "../")
-  : fs.existsSync(path.join(__dirname, "package.json"))
+const pkgRoot = fs.existsSync(path.join(__dirname, '../package.json'))
+  ? path.join(__dirname, '../')
+  : fs.existsSync(path.join(__dirname, 'package.json'))
     ? __dirname
-    : path.join(__dirname, "../../");
+    : path.join(__dirname, '../../');
 
-const libDir = path.join(os.homedir(), ".cmd-bin", "lib");
-const rubyDir = path.join(libDir, "ruby");
+const libDir = path.join(os.homedir(), '.cmd-bin', 'lib');
+const rubyDir = path.join(libDir, 'ruby');
 
 function downloadFile(url: string, dest: string): Promise<void> {
   return new Promise((resolve, reject) => {
     https
-      .get(url, { headers: { "User-Agent": "Node.js" } }, (response) => {
+      .get(url, { headers: { 'User-Agent': 'Node.js' } }, (response) => {
         if (response.statusCode === 302 || response.statusCode === 301) {
           downloadFile(response.headers.location!, dest)
             .then(resolve)
@@ -36,15 +36,15 @@ function downloadFile(url: string, dest: string): Promise<void> {
         }
         const file = fs.createWriteStream(dest);
         response.pipe(file);
-        file.on("finish", () => {
+        file.on('finish', () => {
           file.close();
           resolve();
         });
-        file.on("error", (err) => {
+        file.on('error', (err) => {
           fs.unlink(dest, () => reject(err));
         });
       })
-      .on("error", reject);
+      .on('error', reject);
   });
 }
 
@@ -53,9 +53,9 @@ function getRubyAssetPlatform(): string {
   const arch = process.arch;
 
   // jdx/ruby provides a unified macos binary (ruby-3.4.8.macos.tar.gz)
-  if (platform === "darwin") return "macos";
-  if (platform === "linux" && arch === "x64") return "x86_64_linux";
-  if (platform === "linux" && arch === "arm64") return "arm64_linux";
+  if (platform === 'darwin') return 'macos';
+  if (platform === 'linux' && arch === 'x64') return 'x86_64_linux';
+  if (platform === 'linux' && arch === 'arm64') return 'arm64_linux';
 
   throw new Error(
     `Unsupported OS/Arch combination for portable Ruby: ${platform} ${arch}`,
@@ -64,7 +64,7 @@ function getRubyAssetPlatform(): string {
 
 function getSystemRubyVersion(): string | null {
   try {
-    const res = spawnSync("ruby", ["-v"], { encoding: "utf-8" });
+    const res = spawnSync('ruby', ['-v'], { encoding: 'utf-8' });
     if (res.status === 0) {
       const match = res.stdout.match(/^ruby (\d+\.\d+\.\d+)/);
       if (match) return match[1];
@@ -76,7 +76,7 @@ function getSystemRubyVersion(): string | null {
 }
 
 function isRubyCompatible(version: string): boolean {
-  const parts = version.split(".").map(Number);
+  const parts = version.split('.').map(Number);
   // ^3.4 compatibility: major must be 3, minor must be >= 4
   return parts[0] === 3 && parts[1] >= 4;
 }
@@ -90,15 +90,15 @@ export async function ensureRubyEnvironment(
   }
 
   // jdx/ruby extracts to ruby-3.4.8/bin
-  const rubyBinDir = path.join(rubyDir, "ruby-3.4.8", "bin");
+  const rubyBinDir = path.join(rubyDir, 'ruby-3.4.8', 'bin');
 
   // 1. Highest priority: if lib/ruby/ruby-3.4.8/bin exists, use it!
   if (fs.existsSync(rubyBinDir)) {
-    const currentPath = baseEnv.PATH || process.env.PATH || "";
+    const currentPath = baseEnv.PATH || process.env.PATH || '';
     return {
       ...baseEnv,
       PATH: `${rubyBinDir}${path.delimiter}${currentPath}`,
-      MISE_DISABLE: "1", // Prevent mise from hijacking PATH in child shells
+      MISE_DISABLE: '1', // Prevent mise from hijacking PATH in child shells
     };
   }
 
@@ -113,23 +113,23 @@ export async function ensureRubyEnvironment(
   let s;
   if (!silent) {
     s = spinner();
-    s.start(pc.cyan("Downloading static Portable Ruby 3.4.8..."));
+    s.start(pc.cyan('Downloading static Portable Ruby 3.4.8...'));
   }
 
   const assetPlatform = getRubyAssetPlatform();
   // Deterministic URL for jdx/ruby releases
   const downloadUrl = `https://github.com/jdx/ruby/releases/download/3.4.8-4/ruby-3.4.8.${assetPlatform}.tar.gz`;
 
-  const tarballPath = path.join(libDir, "ruby.tar.gz");
+  const tarballPath = path.join(libDir, 'ruby.tar.gz');
   await downloadFile(downloadUrl, tarballPath);
 
-  if (!silent && s) s.message(pc.cyan("Extracting static Ruby..."));
+  if (!silent && s) s.message(pc.cyan('Extracting static Ruby...'));
   fs.mkdirSync(rubyDir, { recursive: true });
 
   // Extract using system tar
-  const ext = spawnSync("tar", ["-xzf", tarballPath, "-C", rubyDir]);
+  const ext = spawnSync('tar', ['-xzf', tarballPath, '-C', rubyDir]);
   if (ext.status !== 0) {
-    if (!silent && s) s.stop(pc.red("Failed to extract portable Ruby."));
+    if (!silent && s) s.stop(pc.red('Failed to extract portable Ruby.'));
     process.exit(1);
   }
 
@@ -160,13 +160,13 @@ export async function ensureRubyEnvironment(
   // }
 
   if (!silent && s)
-    s.stop(pc.green("Static Portable Ruby installed successfully."));
+    s.stop(pc.green('Static Portable Ruby installed successfully.'));
 
   // Prepend rubyBinDir to PATH so bundle and fastlane commands use it natively
-  const currentPath = baseEnv.PATH || process.env.PATH || "";
+  const currentPath = baseEnv.PATH || process.env.PATH || '';
   return {
     ...baseEnv,
     PATH: `${rubyBinDir}${path.delimiter}${currentPath}`,
-    MISE_DISABLE: "1", // Prevent mise from hijacking PATH in child shells
+    MISE_DISABLE: '1', // Prevent mise from hijacking PATH in child shells
   };
 }

@@ -1,21 +1,21 @@
 AllCops:
   TargetRubyVersion: 3.4
   Exclude:
-    - "node_modules/**/*"
-    - "vendor/**/*"
-    - "dist/**/*"
-    - ".bundle/**/*"
-    - ".git/**/*"
-    - "ios/Pods/**/*"
+    - 'node_modules/**/*'
+    - 'vendor/**/*'
+    - 'dist/**/*'
+    - '.bundle/**/*'
+    - '.git/**/*'
+    - 'ios/Pods/**/*'
 
 # Fastfile often has very long blocks defining lanes
 Metrics/BlockLength:
   Exclude:
-    - "fastlane/Fastfile"
-    - "fastlane/actions/**/*.rb"
-    - "fastlane/utils/**/*.rb"
-    - "ios/Podfile"
-    - "*.gemspec"
+    - 'fastlane/Fastfile'
+    - 'fastlane/actions/**/*.rb'
+    - 'fastlane/utils/**/*.rb'
+    - 'ios/Podfile'
+    - '*.gemspec'
 
 Style/GlobalVars:
   Enabled: false

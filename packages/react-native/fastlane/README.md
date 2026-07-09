@@ -21,8 +21,7 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 Sync certificates and provisioning profiles
 
-----
-
+---
 
 ## iOS
 
@@ -40,15 +39,11 @@ Push a new build to TestFlight
 [bundle exec] fastlane ios internal
 ```
 
-
-
 ### ios adhoc
 
 ```sh
 [bundle exec] fastlane ios adhoc
 ```
-
-
 
 ### ios create_archive
 
@@ -56,15 +51,11 @@ Push a new build to TestFlight
 [bundle exec] fastlane ios create_archive
 ```
 
-
-
 ### ios create_ipa
 
 ```sh
 [bundle exec] fastlane ios create_ipa
 ```
-
-
 
 ### ios resign_ipa
 
@@ -72,10 +63,7 @@ Push a new build to TestFlight
 [bundle exec] fastlane ios resign_ipa
 ```
 
-
-
-----
-
+---
 
 ## Android
 
@@ -93,17 +81,13 @@ Push a new build to Firebase App Distribution
 [bundle exec] fastlane android adhoc
 ```
 
-
-
 ### android create_bundle
 
 ```sh
 [bundle exec] fastlane android create_bundle
 ```
 
-
-
-----
+---
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
 

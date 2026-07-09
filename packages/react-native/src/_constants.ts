@@ -1,11 +1,11 @@
-import path from "node:path";
-import pkg from "../package.json" with { type: "json" };
+import path from 'node:path';
+import pkg from '../package.json' with { type: 'json' };
 
 export const GITHUB_REPO_PATTERN =
   /github\.com([\w,-]+)?[:/]([^/]+\/[^/]+?)(?:\.git)?$/;
 
 export const CALLER_WORKSPACE = process.cwd();
-export const FASTLANE_DIR = path.resolve(import.meta.dirname, "..", "fastlane");
+export const FASTLANE_DIR = path.resolve(import.meta.dirname, '..', 'fastlane');
 
 globalThis._constants = {
   GITHUB_REPO_PATTERN,
