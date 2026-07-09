@@ -1,3 +1,13 @@
+## 1.8.0 (2026-07-09)
+
+### 🚀 Features
+
+- adds kokono package ([728544d](https://github.com/cmd-bin/tools/commit/728544d))
+
+### ❤️ Thank You
+
+- Orkun Tumer @tumerorkun
+
 ## 1.7.1 (2026-07-07)
 
 This was a version bump only for @cmd-bin/react-native to align it with other projects, there were no code changes.
