@@ -80,7 +80,10 @@ cli
         );
       }
     } catch (error: unknown) {
-      console.error('Failed to send notification:', error instanceof Error ? error.message : String(error));
+      console.error(
+        'Failed to send notification:',
+        error instanceof Error ? error.message : String(error),
+      );
       process.exit(1);
     }
   });

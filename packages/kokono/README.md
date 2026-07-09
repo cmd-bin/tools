@@ -12,14 +12,14 @@ npx @cmd-bin/kokono --token="<YOUR_TOKEN>" --title="Hello" --message="World"
 
 ### Options
 
-| Option | Description | Required |
-|--------|-------------|----------|
-| `--token <token>` | Authentication token | **Yes** |
-| `--title <title>` | Notification title | No* |
-| `--message <message>` | Notification message | No* |
-| `--e2e <publicKey>` | End-to-End Encryption public key | No |
+| Option                | Description                      | Required |
+| --------------------- | -------------------------------- | -------- |
+| `--token <token>`     | Authentication token             | **Yes**  |
+| `--title <title>`     | Notification title               | No*      |
+| `--message <message>` | Notification message             | No*      |
+| `--e2e <publicKey>`   | End-to-End Encryption public key | No       |
 
-*\* Note: If `--e2e` is provided, both `--title` and `--message` become required.*
+_\* Note: If `--e2e` is provided, both `--title` and `--message` become required._
 
 ### End-to-End Encryption (E2E)
 

@@ -7,6 +7,14 @@
   "publishConfig": {
     "access": "public"
   },
+  "keywords": [
+    "KokoNo",
+    "cli",
+    "notification",
+    "e2e",
+    "encryption",
+    "push"
+  ],
   "type": "module",
   "main": "./dist/index.mjs",
   "engines": {
