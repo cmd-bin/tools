@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-import { cac, type CAC } from 'cac';
+
 import process from 'node:process';
+import { cac, type CAC } from 'cac';
 import { encrypt, type EncryptedData } from './utils/crypto.js';
 import pkg from '../package.json' with { type: 'json' };
 
@@ -78,8 +79,8 @@ cli
           data ? JSON.stringify(data) : 'Unknown error',
         );
       }
-    } catch (error: any) {
-      console.error('Failed to send notification:', error.message);
+    } catch (error: unknown) {
+      console.error('Failed to send notification:', error instanceof Error ? error.message : String(error));
       process.exit(1);
     }
   });
