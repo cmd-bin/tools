@@ -1,3 +1,13 @@
+## 1.9.0-next.0 (2026-07-14)
+
+### 🚀 Features
+
+- use ruby 4.0.6 and xcodeproj 1.28.1 to support xcode 26.3 ([7877182](https://github.com/cmd-bin/tools/commit/7877182))
+
+### ❤️ Thank You
+
+- Orkun Tumer @tumerorkun
+
 ## 1.8.0 (2026-07-09)
 
 ### 🚀 Features
