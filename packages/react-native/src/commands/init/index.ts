@@ -37,9 +37,9 @@ export const init = (cli: CAC) => {
             const nodeVersionToUse =
               majorVersion >= 24 ? currentNodeVersion : '26';
 
-            const content = `nodejs ${nodeVersionToUse}\nruby 3.4.8\n`;
+            const content = `nodejs ${nodeVersionToUse}\nruby 4.0.6\n`;
             await fs.writeFile(toolVersionsPath, content, 'utf-8');
-            return `Created .tool-versions (node: ${nodeVersionToUse}, ruby: 3.4.8)`;
+            return `Created .tool-versions (node: ${nodeVersionToUse}, ruby: 4.0.6)`;
           }
         },
       },
