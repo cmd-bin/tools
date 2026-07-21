@@ -1,3 +1,7 @@
+## 1.9.0 (2026-07-21)
+
+This was a version bump only for @cmd-bin/react-native to align it with other projects, there were no code changes.
+
 ## 1.9.0-next.1 (2026-07-21)
 
 ### 🩹 Fixes
