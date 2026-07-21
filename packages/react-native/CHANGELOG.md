@@ -1,3 +1,13 @@
+## 1.9.0-next.1 (2026-07-21)
+
+### 🩹 Fixes
+
+- default_value usage insetup action and encoding ([15c7ee5](https://github.com/cmd-bin/tools/commit/15c7ee5))
+
+### ❤️ Thank You
+
+- Orkun Tumer @tumerorkun
+
 ## 1.9.0-next.0 (2026-07-14)
 
 ### 🚀 Features
