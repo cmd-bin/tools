@@ -1,8 +1,8 @@
 node_modules
 dist
 /lib
-fastlane/report.xml
-fastlane/Readme.md
-fastlane/vendor
+**/fastlane/report.xml
+**/fastlane/Readme.md
+**/fastlane/vendor
 .DS_Store
 /.nx
