@@ -52,7 +52,7 @@ function getRubyAssetPlatform(): string {
   const platform = process.platform;
   const arch = process.arch;
 
-  // jdx/ruby provides a unified macos binary (ruby-3.4.8.macos.tar.gz)
+  // jdx/ruby provides a unified macos binary (ruby-4.0.6.macos.tar.gz)
   if (platform === 'darwin') return 'macos';
   if (platform === 'linux' && arch === 'x64') return 'x86_64_linux';
   if (platform === 'linux' && arch === 'arm64') return 'arm64_linux';
@@ -89,10 +89,10 @@ export async function ensureRubyEnvironment(
     fs.mkdirSync(libDir, { recursive: true });
   }
 
-  // jdx/ruby extracts to ruby-3.4.8/bin
-  const rubyBinDir = path.join(rubyDir, 'ruby-3.4.8', 'bin');
+  // jdx/ruby extracts to ruby-4.0.6/bin
+  const rubyBinDir = path.join(rubyDir, 'ruby-4.0.6', 'bin');
 
-  // 1. Highest priority: if lib/ruby/ruby-3.4.8/bin exists, use it!
+  // 1. Highest priority: if lib/ruby/ruby-4.0.6/bin exists, use it!
   if (fs.existsSync(rubyBinDir)) {
     const currentPath = baseEnv.PATH || process.env.PATH || '';
     return {
@@ -113,12 +113,12 @@ export async function ensureRubyEnvironment(
   let s;
   if (!silent) {
     s = spinner();
-    s.start(pc.cyan('Downloading static Portable Ruby 3.4.8...'));
+    s.start(pc.cyan('Downloading static Portable Ruby 4.0.6...'));
   }
 
   const assetPlatform = getRubyAssetPlatform();
   // Deterministic URL for jdx/ruby releases
-  const downloadUrl = `https://github.com/jdx/ruby/releases/download/3.4.8-4/ruby-3.4.8.${assetPlatform}.tar.gz`;
+  const downloadUrl = `https://github.com/jdx/ruby/releases/download/4.0.6-1/ruby-4.0.6.${assetPlatform}.tar.gz`;
 
   const tarballPath = path.join(libDir, 'ruby.tar.gz');
   await downloadFile(downloadUrl, tarballPath);

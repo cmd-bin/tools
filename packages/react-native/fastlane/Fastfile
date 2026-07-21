@@ -50,7 +50,7 @@ platform :ios do
   end
 
   lane :pod do |options|
-    setup(export_method: options[:export_method] || 'app-store')
+    setup(export_method: options[:export_method] || 'app-store', run_match: false)
     Dir.chdir(File.join(ENV['CALLER_WORKSPACE'], 'ios')) do
       update = options[:update] || false
       ipc_client(event_name: "Installing pods#{update ? ' with repo-update' : ''}")

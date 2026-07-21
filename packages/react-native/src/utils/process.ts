@@ -20,7 +20,7 @@ export async function spawnProcess(
   options: any = {},
 ) {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, options);
+    const child = spawn(command, args, { ...options, encoding: 'utf8' });
 
     const killChild = () => {
       S.clear();

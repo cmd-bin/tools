@@ -26,7 +26,7 @@ module Fastlane
 
       def self.setup_ios(params)
         is_ci = other_action.is_ci
-        run_match = params[:run_match] || true
+        run_match = params[:run_match]
         config = ConfigHelper.platform_config(platform: :ios, export_method: params[:export_method], is_ci: is_ci)
 
         other_action.setup_ci if ENV['CI']
@@ -130,6 +130,7 @@ module Fastlane
                                        description: 'Run match',
                                        optional: true,
                                        is_string: false,
+                                       default_value: true,
                                        type: Boolean)
         ]
       end
