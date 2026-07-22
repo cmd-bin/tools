@@ -66,8 +66,6 @@ platform :ios do
         end
       end
     )
-    # ipc_client(event_name: "Installing pods#{update ? ' with repo-update' : ''}")
-    # sh("bundle exec pod install #{update ? '--repo-update' : ''}")
   end
 
   lane :internal do
