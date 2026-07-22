@@ -1,3 +1,14 @@
+## 1.9.1 (2026-07-22)
+
+### 🩹 Fixes
+
+- remove commented code ([61531e2](https://github.com/cmd-bin/tools/commit/61531e2))
+- pod lanes ipc logs ([d63fe1d](https://github.com/cmd-bin/tools/commit/d63fe1d))
+
+### ❤️ Thank You
+
+- Orkun Tumer @tumerorkun
+
 ## 1.9.0 (2026-07-21)
 
 This was a version bump only for @cmd-bin/react-native to align it with other projects, there were no code changes.
