@@ -1,3 +1,13 @@
+## 1.9.0-next.2 (2026-07-22)
+
+### 🩹 Fixes
+
+- pod lanes ipc logs ([2b963bc](https://github.com/cmd-bin/tools/commit/2b963bc))
+
+### ❤️ Thank You
+
+- Orkun Tumer @tumerorkun
+
 ## 1.9.0-next.1 (2026-07-21)
 
 ### 🩹 Fixes
