@@ -34,31 +34,37 @@ module Fastlane
 
         match_type = config[:match_type]
 
-        target_identifier_map = other_action.ipc_wrapper(
-          event_name: 'Loading Targets',
-          end_event_name: 'Targets loaded',
-          action: proc do
-            Xcodeproj::Project.open(config[:project]).native_targets.map do |target|
-              bundle_id = target.build_configurations.first.build_settings['PRODUCT_BUNDLE_IDENTIFIER']
-              { name: target.name, bundle_id: bundle_id }
-            end
-          end
-        )
+        target_identifier_map = if params[:need_target_list] || run_match
+                                  other_action.ipc_wrapper(
+                                    event_name: 'Loading Targets',
+                                    end_event_name: 'Targets loaded',
+                                    action: proc do
+                                      Xcodeproj::Project.open(config[:project]).native_targets.map do |target|
+                                        bundle_id = target.build_configurations.first.build_settings['PRODUCT_BUNDLE_IDENTIFIER']
+                                        { name: target.name, bundle_id: bundle_id }
+                                      end
+                                    end
+                                  )
+                                else
+                                  []
+                                end
 
-        api_key = other_action.ipc_wrapper(
-          event_name: 'Connecting to Apple Developer account',
-          end_event_name: 'Connected to Apple Developer account',
-          action: proc do
-            other_action.app_store_connect_api_key(
-              key_id: config[:key_id],
-              issuer_id: config[:issuer_id],
-              is_key_content_base64: false,
-              key_filepath: config[:key_filepath],
-              in_house: config[:in_house],
-              set_spaceship_token: true
-            )
-          end
-        )
+        if params[:need_api_key]
+          api_key = other_action.ipc_wrapper(
+            event_name: 'Connecting to Apple Developer account',
+            end_event_name: 'Connected to Apple Developer account',
+            action: proc do
+              other_action.app_store_connect_api_key(
+                key_id: config[:key_id],
+                issuer_id: config[:issuer_id],
+                is_key_content_base64: false,
+                key_filepath: config[:key_filepath],
+                in_house: config[:in_house],
+                set_spaceship_token: true
+              )
+            end
+          )
+        end
 
         if run_match
           other_action.ipc_wrapper(
@@ -128,6 +134,18 @@ module Fastlane
                                        type: String),
           FastlaneCore::ConfigItem.new(key: :run_match,
                                        description: 'Run match',
+                                       optional: true,
+                                       is_string: false,
+                                       default_value: true,
+                                       type: Boolean),
+          FastlaneCore::ConfigItem.new(key: :need_api_key,
+                                       description: 'Need API key',
+                                       optional: true,
+                                       is_string: false,
+                                       default_value: true,
+                                       type: Boolean),
+          FastlaneCore::ConfigItem.new(key: :need_target_list,
+                                       description: 'Need target list',
                                        optional: true,
                                        is_string: false,
                                        default_value: true,

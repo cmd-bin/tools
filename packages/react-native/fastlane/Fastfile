@@ -50,12 +50,24 @@ platform :ios do
   end
 
   lane :pod do |options|
-    setup(export_method: options[:export_method] || 'app-store', run_match: false)
-    Dir.chdir(File.join(ENV['CALLER_WORKSPACE'], 'ios')) do
-      update = options[:update] || false
-      ipc_client(event_name: "Installing pods#{update ? ' with repo-update' : ''}")
-      sh("bundle exec pod install #{update ? '--repo-update' : ''}")
-    end
+    setup(
+      export_method: options[:export_method] || 'app-store',
+      run_match: false,
+      need_target_list: false,
+      need_api_key: false
+    )
+    update = options[:update] || false
+    ipc_wrapper(
+      event_name: "Installing pods#{update ? ' with repo-update' : ''}",
+      end_event_name: 'Pods Installed',
+      action: proc do
+        Dir.chdir(File.join(ENV['CALLER_WORKSPACE'], 'ios')) do
+          sh("bundle exec pod install #{update ? '--repo-update' : ''}")
+        end
+      end
+    )
+    # ipc_client(event_name: "Installing pods#{update ? ' with repo-update' : ''}")
+    # sh("bundle exec pod install #{update ? '--repo-update' : ''}")
   end
 
   lane :internal do
