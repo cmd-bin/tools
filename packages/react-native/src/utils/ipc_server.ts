@@ -131,7 +131,7 @@ export class IpcServer extends EventEmitter {
 export function withIpcServer<T extends (...args: any[]) => any>(action: T) {
   return async (...args: Parameters<T>) => {
     const options = args[args.length - 1];
-    const env = getWorkspaceEnv(options);
+    const env = getWorkspaceEnv(options, args[0]);
 
     const ipcServer = new IpcServer(env);
     globalThis._constants.IPC_SERVER_STOP =

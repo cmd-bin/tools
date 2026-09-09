@@ -40,7 +40,7 @@ export async function runBundle(
   bundleArgs: string[],
   options: Record<string, string | boolean | undefined>,
 ) {
-  const baseEnv = getWorkspaceEnv(options);
+  const baseEnv = getWorkspaceEnv(options, bundleArgs);
   const env = await ensureRubyEnvironment(
     baseEnv as Record<string, string | undefined>,
   );
@@ -69,7 +69,7 @@ export async function runCommand(
   args: string[],
   options: Record<string, string | boolean | undefined>,
 ) {
-  const baseEnv = getWorkspaceEnv(options);
+  const baseEnv = getWorkspaceEnv(options, args);
   const env = await ensureRubyEnvironment(
     baseEnv as Record<string, string | undefined>,
   );

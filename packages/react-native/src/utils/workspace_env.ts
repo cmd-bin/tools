@@ -34,8 +34,10 @@ type ENV = Record<string, string> & {
 };
 
 let WORKSPACE_ENV: ENV | null = null;
-export function getWorkspaceEnv(options: Record<string, unknown> = {}): ENV {
+export function getWorkspaceEnv(options: Record<string, unknown> = {}, args?: Array<string>): ENV {
   if (WORKSPACE_ENV) return WORKSPACE_ENV;
+  const isAndroid = args?.includes('android') ?? false;
+  const isIOS = args?.includes('ios') || !isAndroid;
 
   const callerWorkspace = globalThis._constants.CALLER_WORKSPACE;
   const fastlaneDir = globalThis._constants.FASTLANE_DIR;
@@ -58,6 +60,13 @@ export function getWorkspaceEnv(options: Record<string, unknown> = {}): ENV {
     throw new Error('Failed to get repository name from remote origin url');
 
   const buildType = options.production ? 'PROD' : 'DEV';
+  let appIdentifier = process.env.APP_IDENTIFIER || process.env[`APP_IDENTIFIER_${buildType}`]
+  if (isAndroid) {
+    appIdentifier = process.env.APP_IDENTIFIER_ANDROID || process.env[`APP_IDENTIFIER_ANDROID_${buildType}`] || appIdentifier
+  }
+  if (isIOS) {
+    appIdentifier = process.env.APP_IDENTIFIER_IOS || process.env[`APP_IDENTIFIER_IOS_${buildType}`] || appIdentifier
+  }
 
   const env = {
     // Default Fastlane environment variables
@@ -68,8 +77,7 @@ export function getWorkspaceEnv(options: Record<string, unknown> = {}): ENV {
       process.env.BEFORE_ALL || process.env[`BEFORE_ALL_${buildType}`],
     WORKSPACE_NAME:
       process.env.WORKSPACE_NAME || process.env[`WORKSPACE_NAME_${buildType}`],
-    APP_IDENTIFIER:
-      process.env.APP_IDENTIFIER || process.env[`APP_IDENTIFIER_${buildType}`],
+    APP_IDENTIFIER: appIdentifier,
     FIREBASE_IOS_APP_ID:
       process.env.FIREBASE_IOS_APP_ID ||
       process.env[`FIREBASE_IOS_APP_ID_${buildType}`],
