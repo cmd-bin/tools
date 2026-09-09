@@ -1,3 +1,13 @@
+## 1.10.0 (2026-09-09)
+
+### 🚀 Features
+
+- adds ios and android identifier seperation in env file ([cacf22c](https://github.com/cmd-bin/tools/commit/cacf22c))
+
+### ❤️ Thank You
+
+- Orkun Tumer @tumerorkun
+
 ## 1.9.1 (2026-07-22)
 
 ### 🩹 Fixes
