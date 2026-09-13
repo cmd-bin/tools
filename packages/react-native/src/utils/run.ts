@@ -1,4 +1,3 @@
-import { getWorkspaceEnv } from './workspace_env.js';
 import { spawnProcess, registerProcessSignals } from './process.js';
 import pc from 'picocolors';
 import path from 'node:path';
@@ -40,19 +39,16 @@ export async function runBundle(
   bundleArgs: string[],
   options: Record<string, string | boolean | undefined>,
 ) {
-  const baseEnv = getWorkspaceEnv(options, bundleArgs);
   const env = await ensureRubyEnvironment(
-    baseEnv as Record<string, string | undefined>,
+    globalThis._constants.ENV as Record<string, string | undefined>,
   );
   await run('bundle', bundleArgs, env);
 }
 
-async function checkBundle(
-  baseEnv: Record<string, string | boolean | undefined>,
-) {
+async function checkBundle() {
   try {
     const env = await ensureRubyEnvironment(
-      getWorkspaceEnv(baseEnv) as Record<string, string | undefined>,
+      globalThis._constants.ENV as Record<string, string | undefined>,
     );
     const code = await spawnProcess('bundle', ['check'], {
       cwd: env.FASTLANE_DIR,
@@ -69,9 +65,8 @@ export async function runCommand(
   args: string[],
   options: Record<string, string | boolean | undefined>,
 ) {
-  const baseEnv = getWorkspaceEnv(options, args);
   const env = await ensureRubyEnvironment(
-    baseEnv as Record<string, string | undefined>,
+    globalThis._constants.ENV as Record<string, string | undefined>,
   );
 
   // const ipcServer = new IpcServer(env);
@@ -90,7 +85,7 @@ export async function runCommand(
       pc.dim(pc.gray(`(${timeString})`)) + ' 📦' + ' Bundle gem check',
     );
 
-    const isBundleReady = await checkBundle(env);
+    const isBundleReady = await checkBundle();
     timeString = new Date().toTimeString().split(' ')[0];
     // let [duration, stopFn, Spinner] = stopAnim();
 
@@ -120,11 +115,11 @@ export async function runCommand(
     }
 
     // Print the actual Ruby being used so the user can verify
-    const rubyPathCheck = spawnSync('which', ['ruby'], {
-      env: env as NodeJS.ProcessEnv,
-      encoding: 'utf-8',
-    }).stdout.trim();
-    log.info(pc.cyan(`🔍  Using Ruby at: ${rubyPathCheck}`));
+    // const rubyPathCheck = spawnSync('which', ['ruby'], {
+    //   env: env as NodeJS.ProcessEnv,
+    //   encoding: 'utf-8',
+    // }).stdout.trim();
+    // log.info(pc.cyan(`🔍  Using Ruby at: ${rubyPathCheck}`));
 
     timeString = new Date().toTimeString().split(' ')[0];
     log.info(

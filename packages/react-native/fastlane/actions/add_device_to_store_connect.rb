@@ -3,9 +3,9 @@
 module Fastlane
   module Actions
     # Registers a new Apple device in the Developer Portal.
-    class AddDeviceAction < Action
+    class AddDeviceToStoreConnectAction < Action
       def self.run(params)
-        Actions.lane_context[:PLATFORM_NAME] ||= :ios
+        Actions.lane_context[:PLATFORM_NAME] = :ios
 
         result = other_action.setup(export_method: 'app-store', run_match: false)
         config = result[:config]

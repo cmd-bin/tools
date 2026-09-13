@@ -162,13 +162,13 @@ platform :ios do
       }"
     end
 
-    ipc_wrapper(
-      event_name: 'Uploading to Testflight',
-      end_event_name: 'Uploaded to Testflight',
-      action: proc do
-        upload_to_testflight(testflight_params)
-      end
-    )
+    # ipc_wrapper(
+    #   event_name: 'Uploading to Testflight',
+    #   end_event_name: 'Uploaded to Testflight',
+    #   action: proc do
+    #     upload_to_testflight(testflight_params)
+    #   end
+    # )
 
     clean_build_artifacts if ENV['CI']
   end

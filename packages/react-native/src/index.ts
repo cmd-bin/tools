@@ -14,15 +14,27 @@
  *
  * @module
  */
-import './_constants.js';
+import { FASTLANE_ACTIONS, type FastlaneAction } from './_constants.js';
 import { intro, outro, log } from '@clack/prompts';
 import { cac, type CAC } from 'cac';
 import { getRuntimeTimeArgs } from './utils/runtime.js';
 import { status } from './commands/status/index.js';
-import { fastlane } from './commands/fastlane/index.js';
+import { fastlane, runFastlaneAction } from './commands/fastlane/index.js';
 import { bundle } from './commands/bundle/index.js';
 import { clean } from './commands/clean/index.js';
 import { init } from './commands/init/index.js';
+import { listIdentifiers } from './commands/list-identifiers/index.js';
+export { FASTLANE_ACTIONS, type FastlaneAction };
+export {
+  getIosIdentifiers,
+  getAndroidIdentifiers,
+  printIosIdentifiers,
+  printAndroidIdentifiers,
+  hasIosProject,
+  hasAndroidProject,
+  type GetIosIdentifiersOptions,
+  type GetAndroidIdentifiersOptions,
+} from './commands/list-identifiers/index.js';
 import pkg from '../package.json' with { type: 'json' };
 import pc from 'picocolors';
 import { descriptionLog, exampleLog, titleLog } from './utils/logger.js';
@@ -44,6 +56,7 @@ fastlane(cli);
 bundle(cli);
 clean(cli);
 init(cli);
+listIdentifiers(cli);
 
 cli.help((sections) => {
   for (const section of sections) {
@@ -103,8 +116,12 @@ cli.help((sections) => {
 cli.usage('<command> [options]');
 
 cli.example(exampleLog(`${pkg.name} status`));
-cli.example(exampleLog(`${pkg.name} run --clean android`));
+cli.example(exampleLog(`${pkg.name} run ios internal`));
+cli.example(exampleLog(`${pkg.name} run --clean android adhoc`));
+cli.example(exampleLog(`${pkg.name} check_google_play_console`));
+cli.example(exampleLog(`${pkg.name} check_app_store_connect`));
 cli.example(exampleLog(`${pkg.name} clean --platform ios`));
+cli.example(exampleLog(`${pkg.name} list-identifiers`));
 
 /**
  * Main execution function for the CLI.
@@ -131,6 +148,36 @@ export async function run(args: string[]): Promise<void> {
     if (!isHelpOrVersion) {
       isCommand = true;
       intro(`CMD Bin | React Native`);
+    }
+
+    if (!isHelpOrVersion && !cli.matchedCommand) {
+      if (parsed.args.length > 0) {
+        const unknownCommand = parsed.args[0];
+        const actionArgs = parsed.args.slice(1);
+
+        if (FASTLANE_ACTIONS.includes(unknownCommand as any)) {
+          await runFastlaneAction(unknownCommand, actionArgs, {
+            ...parsed.options,
+            production: Boolean(parsed.options.production || parsed.options.p),
+          });
+          return;
+        }
+
+        isCommand = false;
+        log.error(`Unknown command '${unknownCommand}'.`);
+        log.info(pc.bold('Available commands:'));
+        log.message(exampleLog(`${pkg.name} run <ios|android> <lane>`));
+        log.message(exampleLog(`${pkg.name} bundle [...args]`));
+        log.message(exampleLog(`${pkg.name} clean`));
+        log.message(exampleLog(`${pkg.name} init`));
+        log.message(exampleLog(`${pkg.name} status`));
+        log.message(exampleLog(`${pkg.name} list-identifiers`));
+        log.info(pc.bold('Available Fastlane actions:'));
+        for (const action of FASTLANE_ACTIONS) {
+          log.message(exampleLog(`${pkg.name} ${action}`));
+        }
+        return;
+      }
     }
 
     const result = cli.runMatchedCommand();

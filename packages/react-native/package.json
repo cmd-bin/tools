@@ -21,9 +21,16 @@
     "prepublishOnly": "npm run build && npm pkg fix"
   },
   "dependencies": {
-    "@clack/prompts": "^1.7.0",
+    "@bacons/xcode": "^1.0.0-alpha.33",
+    "@clack/prompts": "^1.8.0",
+    "@expo/plist": "^0.9.0",
     "cac": "^7.0.0",
     "dotenv": "^17.4.2",
     "picocolors": "^1.1.1"
+  },
+  "overrides": {
+    "uuid": "14.0.1",
+    "@expo/plist": "0.9.0",
+    "@xmldom/xmldom": "0.9.10"
   }
 }

@@ -3,20 +3,25 @@
 module Fastlane
   module Actions
     # Checks Apple Developer devices by UDID or lists all registered devices.
-    class CheckDeviceAction < Action
+    class CheckDeviceOnStoreConnectAction < Action
       def self.run(params)
-        Actions.lane_context[:PLATFORM_NAME] ||= :ios
+        Actions.lane_context[:PLATFORM_NAME] = :ios
         other_action.setup(export_method: 'app-store', run_match: false)
         other_action.ipc_client(event_name: 'Getting Apple Developer devices', payload: { start: true })
         devices = Spaceship::ConnectAPI::Device.all
         udid = params[:udid].to_s
-        other_action.ipc_client(event_name: 'Apple Developer devices retrieved', payload: { end: true, list: devices.map do |d|
-          { status: d.status, model: d.model, class: d.deviceClass, name: d.name, udid: d.udid, addedDate: d.addedDate }
-        end })
+
+        if udid.empty?
+          other_action.ipc_client(event_name: 'Apple Developer devices retrieved', payload: { end: true, list: devices.map do |d|
+            { status: d.status, model: d.model, class: d.deviceClass, name: d.name, udid: d.udid, addedDate: d.addedDate }
+          end })
+        end
         return list_devices(devices) if udid.empty?
 
         device = devices.find { |existing_device| existing_device.udid == udid }
-
+        other_action.ipc_client(event_name: 'Apple Developer devices retrieved', payload: { end: true, list: [device].map do |d|
+          { status: d.status, model: d.model, class: d.deviceClass, name: d.name, udid: d.udid, addedDate: d.addedDate }
+        end })
         print_output(params, device)
 
         device

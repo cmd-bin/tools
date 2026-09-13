@@ -1,8 +1,8 @@
 import { type CAC } from 'cac';
 import { runBundle } from '../../utils/run.js';
 import { withIpcServer } from '../../utils/ipc_server.js';
-import { withEnv } from '../../utils/load_deploy_env.js';
 import { exampleLog, descriptionLog } from '../../utils/logger.js';
+import { withEnv } from '../../utils/env_resolutions/index.js';
 
 export const bundle = (cli: CAC) => {
   cli

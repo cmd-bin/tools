@@ -3,6 +3,7 @@
 require 'fastlane/action'
 require 'fastlane_core'
 require 'xcodeproj'
+require 'json'
 require_relative '../utils/index'
 
 module Fastlane
@@ -35,16 +36,24 @@ module Fastlane
         match_type = config[:match_type]
 
         target_identifier_map = if params[:need_target_list] || run_match
-                                  other_action.ipc_wrapper(
-                                    event_name: 'Loading Targets',
-                                    end_event_name: 'Targets loaded',
-                                    action: proc do
-                                      Xcodeproj::Project.open(config[:project]).native_targets.map do |target|
-                                        bundle_id = target.build_configurations.first.build_settings['PRODUCT_BUNDLE_IDENTIFIER']
-                                        { name: target.name, bundle_id: bundle_id }
-                                      end
+                                  if ENV['IOS_TARGET_IDENTIFIER_MAP'] && !ENV['IOS_TARGET_IDENTIFIER_MAP'].empty?
+                                    begin
+                                      JSON.parse(ENV['IOS_TARGET_IDENTIFIER_MAP'], symbolize_names: true)
+                                    rescue StandardError
+                                      []
                                     end
-                                  )
+                                  else
+                                    other_action.ipc_wrapper(
+                                      event_name: 'Loading Targets',
+                                      end_event_name: 'Targets loaded',
+                                      action: proc do
+                                        Xcodeproj::Project.open(config[:project]).native_targets.map do |target|
+                                          bundle_id = target.build_configurations.first.build_settings['PRODUCT_BUNDLE_IDENTIFIER']
+                                          { name: target.name, bundle_id: bundle_id }
+                                        end
+                                      end
+                                    )
+                                  end
                                 else
                                   []
                                 end

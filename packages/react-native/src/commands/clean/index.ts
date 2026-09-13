@@ -5,7 +5,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import { log } from '@clack/prompts';
-import { getWorkspaceEnv } from '../../utils/workspace_env.js';
+import { getWorkspaceEnv } from '../../utils/env_resolutions/index.js';
 
 export const clean = (cli: CAC) => {
   cli
@@ -39,7 +39,7 @@ export const clean = (cli: CAC) => {
         let didSpecificClean = false;
 
         if (options.vendor) {
-          const env = getWorkspaceEnv();
+          const env = getWorkspaceEnv([], options);
           let vendorPath = env.BUNDLE_PATH;
           if (vendorPath.startsWith('~/') || vendorPath === '~') {
             vendorPath = vendorPath.replace(/^~/, os.homedir());

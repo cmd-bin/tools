@@ -73,8 +73,8 @@ module ConfigHelper
   def self.common_config
     return @_common_config if @_common_config
 
-    app_identifier                  = require_env('APP_IDENTIFIER')
-    root_dir_name                   = optional_env('GITHUB_WORKSPACE', default: nil)
+    # app_identifier                  = optional_env('APP_IDENTIFIER', default: nil)
+    root_dir_name = optional_env('GITHUB_WORKSPACE', default: nil)
     root_dir_name ||= find_project_root(File.dirname(__FILE__))
     slack_url                       = optional_env('SLACK_URL', default: nil)
     slack_mentions                  = optional_env('SLACK_MENTIONS', default: '')
@@ -102,7 +102,7 @@ module ConfigHelper
       build_environment: build_environment,
       slack_url: slack_url,
       slack_mentions: slack_mentions,
-      app_identifier: app_identifier,
+      # app_identifier: app_identifier,
       root_dir_name: root_dir_name,
       firebase_credentials_base64: firebase_credentials_base64,
       firebase_tester_group: firebase_tester_group,
@@ -128,6 +128,7 @@ module ConfigHelper
     platform                        = :ios
     commons                         = common_config()
     root_dir_name                   = commons[:root_dir_name]
+    app_identifier                  = optional_env('APP_IDENTIFIER_IOS')
 
     workspace_name                  = optional_env('WORKSPACE_NAME',
                                                    default: find_ios_project_name("#{root_dir_name}/ios"))
@@ -157,6 +158,7 @@ module ConfigHelper
 
     {
       **commons,
+      app_identifier: app_identifier,
       configuration: commons[:app_configuration],
       export_method: export_method,
       platform: platform,
@@ -193,6 +195,7 @@ module ConfigHelper
     platform                        = :android
     commons                         = common_config()
     root_dir_name                   = commons[:root_dir_name]
+    app_identifier                  = optional_env('APP_IDENTIFIER_ANDROID')
 
     key_store_base64                = require_env('ANDROID_KEYSTORE')
     key_store_password              = require_env('ANDROID_KEYSTORE_PASSWORD')
@@ -214,6 +217,7 @@ module ConfigHelper
 
     {
       **commons,
+      app_identifier: app_identifier,
       export_method: export_method,
       platform: platform,
       task: export_method == 'apk' ? 'assemble' : 'bundle',
