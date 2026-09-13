@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import pc from 'picocolors';
-import { spinner } from '@clack/prompts';
+import { log, spinner } from '@clack/prompts';
 import { formatDuration } from './logger.js';
 
 const commonPaths = ['node_modules', 'release_notes.md'];
@@ -21,12 +21,28 @@ const S = spinner();
 export const clearBuilds = async (
   platform = 'all',
   rootDir = process.cwd(),
+  dryRun = false,
 ) => {
   const allPaths = [
     ...commonPaths,
     ...(platform === 'android' || platform === 'all' ? androidPaths : []),
     ...(platform === 'ios' || platform === 'all' ? iosPaths : []),
   ];
+
+  if (dryRun) {
+    let count = 0;
+    for (const p of allPaths) {
+      const fullPath = path.join(rootDir, p);
+      if (fs.existsSync(fullPath)) {
+        log.info(pc.yellow(`[dry-run] Would delete: ${fullPath}`));
+        count++;
+      }
+    }
+    if (count === 0) {
+      log.info(pc.dim('[dry-run] No build artifacts found to delete.'));
+    }
+    return;
+  }
   let timeString = new Date().toTimeString().split(' ')[0];
   let startTimer = performance.now();
   S.start(pc.dim(pc.gray(`(${timeString})`)) + ' 🗑️' + ' Clearing builds...');

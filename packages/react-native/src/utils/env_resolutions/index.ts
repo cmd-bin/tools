@@ -13,6 +13,7 @@ import { resolveEnvWithFallback } from './fallback.js';
 import { resolveToolingPaths } from './paths.js';
 import type { BuildType, ENV, GetWorkspaceEnvOptions } from './types.js';
 import { loadDeployEnv } from './load_deploy_env.js';
+import { ensureRubyEnvironment } from '../ruby.js';
 
 export * from './types.js';
 export * from './git.js';
@@ -20,10 +21,10 @@ export * from './fallback.js';
 export * from './paths.js';
 export * from './load_deploy_env.js';
 
-export function getWorkspaceEnv(
+export async function getWorkspaceEnv(
   _args: Array<string> = [],
   options: GetWorkspaceEnvOptions = {},
-): ENV {
+): Promise<ENV> {
   if (globalThis._constants.ENV) return globalThis._constants.ENV;
 
   const callerWorkspace = globalThis._constants.CALLER_WORKSPACE;
@@ -161,8 +162,17 @@ export function getWorkspaceEnv(
     USE_FRAMEWORKS: process.env.USE_FRAMEWORKS || 'static',
   } as ENV;
 
+  const rubyEnv = await ensureRubyEnvironment(process.env);
+  if (rubyEnv.PATH) {
+    process.env.PATH = rubyEnv.PATH;
+  }
+  if (rubyEnv.MISE_DISABLE) {
+    process.env.MISE_DISABLE = rubyEnv.MISE_DISABLE;
+  }
+
   globalThis._constants.ENV = {
     ...process.env,
+    ...rubyEnv,
     ...env,
   };
   return globalThis._constants.ENV;
@@ -171,7 +181,7 @@ export function getWorkspaceEnv(
 export function withEnv<T extends (...args: any[]) => any>(action: T) {
   return async (...args: Parameters<T>) => {
     loadDeployEnv();
-    getWorkspaceEnv(args[0], args[1]);
+    await getWorkspaceEnv(args[0], args[1]);
     return await action(...args);
   };
 }

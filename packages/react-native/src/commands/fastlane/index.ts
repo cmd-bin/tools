@@ -1,5 +1,5 @@
 import { clearBuilds } from '../../utils/clear_builds.js';
-import { runCommand } from '../../utils/run.js';
+import { executeFastlane } from '../../utils/executor.js';
 import { type CAC } from 'cac';
 import { log } from '@clack/prompts';
 import pc from 'picocolors';
@@ -15,7 +15,7 @@ export const runFastlaneAction = withEnv(
       options: Record<string, any> = {},
     ) => {
       try {
-        await runCommand(['run', actionName, ...actionArgs], options);
+        await executeFastlane(['run', actionName, ...actionArgs], options);
       } catch (e: unknown) {
         if (e instanceof Error) console.error(e.message);
         else console.error(e);
@@ -88,7 +88,7 @@ export const fastlane = (cli: CAC) => {
 
       try {
         if (options.clean) await clearBuilds(isAndroid ? 'android' : 'ios');
-        await runCommand(args, options);
+        await executeFastlane(args, options);
       } catch (e: unknown) {
         if (e instanceof Error) console.error(e.message);
         else console.error(e);

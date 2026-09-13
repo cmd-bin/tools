@@ -5,7 +5,6 @@ import fs from 'node:fs';
 import pc from 'picocolors';
 import { EventEmitter } from 'node:events';
 import crypto from 'node:crypto';
-import { getWorkspaceEnv } from './env_resolutions/index.js';
 import { spinner, log, taskLog, stream } from '@clack/prompts';
 
 export const S = spinner({
@@ -102,6 +101,10 @@ export class IpcServer extends EventEmitter {
 
       this.server.listen(this.socketPath, () => {
         this.env.NF_IPC_SOCKET = this.socketPath;
+        process.env.NF_IPC_SOCKET = this.socketPath;
+        if (globalThis._constants.ENV) {
+          globalThis._constants.ENV.NF_IPC_SOCKET = this.socketPath;
+        }
         resolve(() => {
           this.stop();
         });
@@ -130,8 +133,7 @@ export class IpcServer extends EventEmitter {
 
 export function withIpcServer<T extends (...args: any[]) => any>(action: T) {
   return async (...args: Parameters<T>) => {
-    const options = args[args.length - 1];
-    const env = getWorkspaceEnv(options);
+    const env = globalThis._constants.ENV as Record<string, unknown>;
 
     const ipcServer = new IpcServer(env);
     globalThis._constants.IPC_SERVER_STOP =
