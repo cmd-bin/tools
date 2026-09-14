@@ -19,7 +19,7 @@ module FileHelper
     end
 
     FileUtils.mkdir_p(File.dirname(file_path))
-    File.delete(file_path) if File.exist?(file_path)
+    FileUtils.rm_f(file_path)
     File.write(file_path, decode_base64(base64_content))
     File.chmod(FILE_PERMISSION, file_path)
   end

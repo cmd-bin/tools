@@ -67,7 +67,7 @@ module Fastlane
                                        is_string: false,
                                        type: Proc),
           FastlaneCore::ConfigItem.new(key: :end_payload_proc,
-                                       description: 'Optional proc that takes the block result and returns a hash to merge into the end event payload',
+                                       description: 'Proc to merge block result into end event payload',
                                        optional: true,
                                        is_string: false,
                                        type: Proc)

@@ -71,7 +71,7 @@ export function printAndroidIdentifiers(
   androidResult: ResolveAndroidIdentifiersResult,
   workspaceRoot: string = globalThis._constants.CALLER_WORKSPACE,
 ): void {
-  log.step(pc.bold(pc.green('Android')));
+  log.step(pc.bold(pc.blue('Android')));
   const relRoot =
     path.relative(workspaceRoot, androidResult.androidRoot) || 'android';
   log.info(`Path: ${pc.bold(relRoot)}`);
@@ -215,7 +215,7 @@ export const listIdentifiers = (cli: CAC) => {
           if (platform === 'all' || platform === 'ios') {
             if (platform === 'ios' && !hasIos) {
               throw new Error(
-                `iOS projesi bulunamadı (${path.join(workspaceRoot, 'ios')}).`,
+                `iOS project not found (${path.join(workspaceRoot, 'ios')}).`,
               );
             }
 
@@ -242,7 +242,7 @@ export const listIdentifiers = (cli: CAC) => {
           if (platform === 'all' || platform === 'android') {
             if (platform === 'android' && !hasAndroid) {
               throw new Error(
-                `Android projesi bulunamadı (${path.join(workspaceRoot, 'android')}).`,
+                `Android project not found (${path.join(workspaceRoot, 'android')}).`,
               );
             }
 
@@ -258,7 +258,7 @@ export const listIdentifiers = (cli: CAC) => {
 
           if (!iosResult && !androidResult) {
             throw new Error(
-              `Belirtilen dizinde (${workspaceRoot}) ne iOS ne de Android projesi bulunamadı.`,
+              `Neither iOS nor Android project found in the specified directory (${workspaceRoot}).`,
             );
           }
 

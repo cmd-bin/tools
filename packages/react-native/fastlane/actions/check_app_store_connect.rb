@@ -15,7 +15,7 @@ module Fastlane
 
         app_identifier = params[:app_identifier] || config[:app_identifier]
         if app_identifier.to_s.strip.empty?
-          UI.user_error!('app_identifier is missing! Please provide it in project, .env.deploy or pass app_identifier:com.example.app')
+          UI.user_error!('app_identifier is missing! Please provide it in project, .env.deploy')
         end
 
         other_action.ipc_client(
@@ -81,7 +81,6 @@ module Fastlane
       def self.is_supported?(platform)
         platform == :ios
       end
-      # rubocop:enable Naming/PredicatePrefix
     end
   end
 end

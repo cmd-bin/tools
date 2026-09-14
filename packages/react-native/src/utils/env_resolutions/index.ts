@@ -95,7 +95,7 @@ export async function getWorkspaceEnv(
   // 4. If neither Android nor iOS project is found and no identifiers exist, then fail
   if (!hasAndroid && !hasIos && !appIdentifierAndroid && !appIdentifierIos) {
     throw new Error(
-      `Ne iOS ne de Android projesi bulunamadı (${callerWorkspace}).`,
+      `Neither iOS nor Android project was found (${callerWorkspace}).`,
     );
   }
 
@@ -181,7 +181,17 @@ export async function getWorkspaceEnv(
 export function withEnv<T extends (...args: any[]) => any>(action: T) {
   return async (...args: Parameters<T>) => {
     loadDeployEnv();
-    await getWorkspaceEnv(args[0], args[1]);
+    const envOptions = Array.isArray(args[0])
+      ? args[1]
+      : typeof args[0] === 'object' && args[0] !== null
+        ? args[0]
+        : {};
+    const envArgs = Array.isArray(args[0]) ? args[0] : [];
+    try {
+      await getWorkspaceEnv(envArgs, envOptions);
+    } catch {
+      // Allow command (e.g. troubleshoot) to run even if workspace has not been initialized yet
+    }
     return await action(...args);
   };
 }

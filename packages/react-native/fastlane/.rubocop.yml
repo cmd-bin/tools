@@ -1,0 +1,74 @@
+AllCops:
+  NewCops: enable
+  SuggestExtensions: false
+  TargetRubyVersion: 3.4
+  Exclude:
+    - 'vendor/**/*'
+    - '.bundle/**/*'
+    - 'Pods/**/*'
+
+# Allow stabby lambda syntax `->(ctx) { ... }` everywhere (single-line & multi-line)
+Style/Lambda:
+  EnforcedStyle: literal
+
+# Fastlane action API requires `is_supported?(platform)`
+Naming/PredicatePrefix:
+  AllowedMethods:
+    - is_supported?
+
+# Do not force documentation comments on every class/module
+Style/Documentation:
+  Enabled: false
+
+# Fastlane DSL blocks (lane, platform, etc.) are naturally long
+Metrics/BlockLength:
+  AllowedMethods:
+    - lane
+    - platform
+    - before_all
+    - after_all
+    - error
+    - pipeline
+  Exclude:
+    - 'Fastfile'
+
+# Fastlane actions and configuration options can be lengthy
+Metrics/MethodLength:
+  Max: 100
+
+Metrics/ClassLength:
+  Max: 250
+
+Metrics/ModuleLength:
+  Max: 350
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Metrics/ParameterLists:
+  Enabled: false
+
+# Allow existing global variables used for project backup in Fastfile
+Style/GlobalVars:
+  AllowedVariables:
+    - $pbxproj_path
+    - $pbxproj_backup
+
+# Allow Fastfile and Gemfile naming conventions
+Naming/FileName:
+  Exclude:
+    - 'Fastfile'
+    - 'Gemfile'
+
+# Standard quote style
+Style/StringLiterals:
+  EnforcedStyle: single_quotes
+
+Style/FrozenStringLiteralComment:
+  EnforcedStyle: always

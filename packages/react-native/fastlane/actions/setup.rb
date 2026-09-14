@@ -48,7 +48,8 @@ module Fastlane
                                       end_event_name: 'Targets loaded',
                                       action: proc do
                                         Xcodeproj::Project.open(config[:project]).native_targets.map do |target|
-                                          bundle_id = target.build_configurations.first.build_settings['PRODUCT_BUNDLE_IDENTIFIER']
+                                          settings = target.build_configurations.first.build_settings
+                                          bundle_id = settings['PRODUCT_BUNDLE_IDENTIFIER']
                                           { name: target.name, bundle_id: bundle_id }
                                         end
                                       end
@@ -95,20 +96,21 @@ module Fastlane
             end
           )
         end
-        cert_name = run_match ? ENV["sigh_#{config[:app_identifier]}_#{match_type}_certificate-name"] : nil
+        cert_name = run_match ? ENV.fetch("sigh_#{config[:app_identifier]}_#{match_type}_certificate-name", nil) : nil
         targets = target_identifier_map.map do |target|
           bid = target[:bundle_id]
           {
             name: target[:name],
             bundle_id: bid,
-            profile_uuid: run_match ? ENV["sigh_#{bid}_#{match_type}"] : nil,
-            profile_name: run_match ? ENV["sigh_#{bid}_#{match_type}_profile-name"] : nil,
-            profile_path: run_match ? ENV["sigh_#{bid}_#{match_type}_profile-path"] : nil,
+            profile_uuid: run_match ? ENV.fetch("sigh_#{bid}_#{match_type}", nil) : nil,
+            profile_name: run_match ? ENV.fetch("sigh_#{bid}_#{match_type}_profile-name", nil) : nil,
+            profile_path: run_match ? ENV.fetch("sigh_#{bid}_#{match_type}_profile-path", nil) : nil,
             cert_name: cert_name
           }
         end
 
         {
+          **config,
           config: config,
           api_key: api_key,
           targets: targets,
@@ -127,6 +129,7 @@ module Fastlane
         )
 
         {
+          **config,
           config: config
         }
       end

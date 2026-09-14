@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'json'
+
 module ConfigHelper
   MATCH_TYPE_MAP = {
     'ad-hoc' => 'adhoc',
@@ -70,6 +72,92 @@ module ConfigHelper
     File.basename(project_path, '.xcodeproj')
   end
 
+  def self.find_app_display_name(root_dir)
+    app_json = File.join(root_dir, 'app.json')
+    if File.exist?(app_json)
+      begin
+        data = JSON.parse(File.read(app_json))
+        return data['displayName'] || data['name'] if data['displayName'] || data['name']
+      rescue StandardError
+        nil
+      end
+    end
+
+    package_json = File.join(root_dir, 'package.json')
+    if File.exist?(package_json)
+      begin
+        data = JSON.parse(File.read(package_json))
+        return data['displayName'] || data['name'] if data['displayName'] || data['name']
+      rescue StandardError
+        nil
+      end
+    end
+
+    nil
+  end
+
+  def self.find_ios_app_name(ios_dir)
+    return nil unless ios_dir && File.directory?(ios_dir)
+
+    # 1. Search for Info.plist files inside ios directory (excluding Pods, Tests, DerivedData)
+    info_plists = Dir.glob(File.join(ios_dir, '**/Info.plist')).reject do |p|
+      p.include?('/Pods/') || p.include?('Tests') || p.include?('DerivedData')
+    end
+
+    info_plists.each do |plist_path|
+      content = File.read(plist_path)
+      # CFBundleDisplayName is the user-visible display name on the home screen
+      if (match = content.match(%r{<key>CFBundleDisplayName</key>\s*<string>([^<$]+)</string>}m))
+        val = match[1].strip
+        return val unless val.empty?
+      end
+
+      # CFBundleName
+      if (match = content.match(%r{<key>CFBundleName</key>\s*<string>([^<$]+)</string>}m))
+        val = match[1].strip
+        return val unless val.empty?
+      end
+    end
+
+    # 2. Check xcodeproj if plist used variable or not found
+    xcodeproj_path = Dir.glob(File.join(ios_dir, '*.xcodeproj')).first
+    if xcodeproj_path && File.exist?(xcodeproj_path)
+      begin
+        require 'xcodeproj'
+        project = Xcodeproj::Project.open(xcodeproj_path)
+        app_target = project.native_targets.find { |t| t.product_type == 'com.apple.product-type.application' } ||
+                     project.native_targets.first
+
+        if app_target
+          product_name = app_target.build_configurations.first&.build_settings&.[]('PRODUCT_NAME')
+          return product_name.strip if product_name && !product_name.strip.empty? && !product_name.include?('$')
+
+          return app_target.name.strip if app_target.name && !app_target.name.strip.empty?
+        end
+      rescue LoadError, StandardError => e
+        Fastlane::UI.important("Failed to read iOS app name from xcodeproj: #{e.message}")
+      end
+    end
+
+    nil
+  end
+
+  def self.find_android_app_name(android_dir)
+    strings_path = File.join(android_dir, 'app/src/main/res/values/strings.xml')
+    if File.exist?(strings_path)
+      match = File.read(strings_path).match(%r{<string\s+name=["']app_name["']>([^<]+)</string>})
+      return match[1] if match
+    end
+
+    settings_path = File.join(android_dir, 'settings.gradle')
+    if File.exist?(settings_path)
+      match = File.read(settings_path).match(/rootProject\.name\s*=\s*['"]([^'"]+)['"]/)
+      return match[1] if match
+    end
+
+    nil
+  end
+
   def self.common_config
     return @_common_config if @_common_config
 
@@ -96,8 +184,11 @@ module ConfigHelper
     key_store_path                  = "#{private_keys_path}/key.keystore"
     play_store_credentials_path     = "#{private_keys_path}/play_store_credentials.json"
 
+    app_name                        = optional_env('APP_NAME', default: nil) || find_app_display_name(root_dir_name)
+
     @_common_config = {
       cliff: true,
+      app_name: app_name,
       app_configuration: build_configuration,
       build_environment: build_environment,
       slack_url: slack_url,
@@ -126,7 +217,7 @@ module ConfigHelper
 
   def self.ios_config(export_method: 'app-store', is_ci: true)
     platform                        = :ios
-    commons                         = common_config()
+    commons                         = common_config
     root_dir_name                   = commons[:root_dir_name]
     app_identifier                  = optional_env('APP_IDENTIFIER_IOS')
 
@@ -158,6 +249,7 @@ module ConfigHelper
 
     {
       **commons,
+      app_name: find_ios_app_name("#{root_dir_name}/ios") || scheme || workspace_name || commons[:app_name],
       app_identifier: app_identifier,
       configuration: commons[:app_configuration],
       export_method: export_method,
@@ -193,7 +285,7 @@ module ConfigHelper
 
   def self.android_config(export_method: 'apk')
     platform                        = :android
-    commons                         = common_config()
+    commons                         = common_config
     root_dir_name                   = commons[:root_dir_name]
     app_identifier                  = optional_env('APP_IDENTIFIER_ANDROID')
 
@@ -217,6 +309,7 @@ module ConfigHelper
 
     {
       **commons,
+      app_name: commons[:app_name] || find_android_app_name("#{root_dir_name}/android") || 'Android App',
       app_identifier: app_identifier,
       export_method: export_method,
       platform: platform,

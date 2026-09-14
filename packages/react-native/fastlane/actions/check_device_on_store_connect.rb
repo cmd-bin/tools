@@ -54,7 +54,6 @@ module Fastlane
       def self.is_supported?(platform)
         platform == :ios
       end
-      # rubocop:enable Naming/PredicatePrefix
 
       def self.list_devices(devices)
         devices.each do |device|

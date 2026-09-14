@@ -136,7 +136,7 @@ export function resolveAndroidIdentifiers(
   const androidRoot = findAndroidRoot(workspaceRoot);
   if (!androidRoot) {
     throw new Error(
-      `Android projesi bulunamadı (${path.join(workspaceRoot, 'android')}).`,
+      `Android project not found (${path.join(workspaceRoot, 'android')}).`,
     );
   }
 
@@ -240,7 +240,7 @@ export function getAndroidIdentifiers(
   const androidRoot = findAndroidRoot(workspaceRoot);
   if (!androidRoot) {
     throw new Error(
-      `Android projesi bulunamadı (${path.join(workspaceRoot, 'android')}).`,
+      `Android project not found (${path.join(workspaceRoot, 'android')}).`,
     );
   }
 

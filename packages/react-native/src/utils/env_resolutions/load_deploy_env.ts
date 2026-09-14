@@ -15,13 +15,13 @@ export function loadDeployEnv() {
   );
   if (!fs.existsSync(envPath)) return;
   dotenv.config({ path: envPath, override: true, quiet: true });
-  const timeString = new Date().toTimeString().split(' ')[0];
-  log.success(
-    pc.dim(pc.gray(`(${timeString})`)) +
-      ' ⚙️ ' +
-      pc.green(
-        ` Loaded env from ${pc.bold(path.relative(process.cwd(), envPath))}`,
-      ),
-  );
+  // const timeString = new Date().toTimeString().split(' ')[0];
+  // log.success(
+  //   pc.dim(pc.gray(`(${timeString})`)) +
+  //     ' ⚙️ ' +
+  //     pc.green(
+  //       ` Loaded env from ${pc.bold(path.relative(process.cwd(), envPath))}`,
+  //     ),
+  // );
   envLoaded = true;
 }

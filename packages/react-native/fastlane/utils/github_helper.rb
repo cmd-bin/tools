@@ -22,11 +22,14 @@ module GithubHelper
     Fastlane::UI.user_error!('Repository name could not be determined')
   end
 
-  def self.release_notes(cliff: false, platform: :ios, version: '0.0.1', build_number: 0, build_environment: 'Dev')
+  def self.release_notes(cliff: true, platform: :ios, version: '0.0.1', build_number: 0, build_environment: 'Dev')
     if cliff
+      workspace = ENV.fetch('CALLER_WORKSPACE', nil) || ENV.fetch('GITHUB_WORKSPACE', nil) || Dir.pwd
       tag_name = "#{platform == :ios ? '🍏' : '🤖'}-v#{version}_#{build_number}_#{build_environment.downcase}"
-      Fastlane::Actions.sh("cd #{ENV['GITHUB_WORKSPACE']} && RUST_LOG=error git cliff --tag=#{tag_name} --unreleased -o #{ENV['GITHUB_WORKSPACE']}/release_notes.md")
-      File.read("#{ENV['GITHUB_WORKSPACE']}/release_notes.md")
+      notes_file = File.join(workspace, 'release_notes.md')
+      cmd = "cd #{workspace} && RUST_LOG=error git cliff --tag=#{tag_name} --unreleased -o #{notes_file}"
+      Fastlane::Actions.sh(cmd)
+      File.read(notes_file)
       # IpcClient.send_event("Created release notes", { notes: notes })
 
     else
@@ -51,7 +54,7 @@ module GithubHelper
     Fastlane::Actions::SetGithubReleaseAction.run(
       server_url: GITHUB_API_BASE,
       repository_name: current_repo,
-      api_bearer: ENV['GITHUB_TOKEN'],
+      api_bearer: ENV.fetch('GITHUB_TOKEN', nil),
       name: "#{platform == :ios ? '🍏' : '🤖'} v#{version} (#{build_number}) #{build_environment}",
       tag_name: "#{platform == :ios ? '🍏' : '🤖'}-v#{version}_#{build_number}_#{build_environment.downcase}",
       description: release_notes,
@@ -67,7 +70,7 @@ module GithubHelper
   def self.github_get(path, params = {})
     uri       = URI("#{GITHUB_API_BASE}#{path}")
     uri.query = URI.encode_www_form(params) unless params.empty?
-    token     = ENV['GITHUB_TOKEN']
+    token     = ENV.fetch('GITHUB_TOKEN', nil)
 
     request = Net::HTTP::Get.new(uri)
     request['Accept']        = 'application/vnd.github+json'
