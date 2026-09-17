@@ -25,10 +25,49 @@ module Fastlane
         end
       end
 
+      def self.check_node_modules(workspace_path)
+        return unless workspace_path && File.directory?(workspace_path)
+
+        Dir.chdir(workspace_path) do
+          other_action.ipc_client(event_name: 'Checking node modules', payload: { start: true })
+          if system('npm ls > /dev/null 2>&1')
+            other_action.ipc_client(event_name: 'Node modules are up to date', payload: { end: true })
+          else
+            other_action.ipc_client(event_name: 'Installing node modules', payload: { start: true })
+            other_action.sh('npm ci')
+            other_action.ipc_client(event_name: 'Node modules installed', payload: { end: true })
+          end
+        end
+      end
+
+      def self.check_pods(ios_path)
+        return unless ios_path && File.directory?(ios_path)
+
+        Dir.chdir(ios_path) do
+          other_action.ipc_client(event_name: 'Checking pods', payload: { start: true })
+          if system('cmp -s Podfile.lock Pods/Manifest.lock 2>/dev/null')
+            other_action.ipc_client(event_name: 'Pods are up to date', payload: { end: true })
+          else
+            other_action.ipc_client(event_name: 'Installing pods', payload: { start: true })
+            other_action.sh('bundle exec pod install')
+            other_action.ipc_client(event_name: 'Pods installed', payload: { end: true })
+          end
+        end
+      end
+
       def self.setup_ios(params)
         is_ci = other_action.is_ci
         run_match = params[:run_match]
         config = ConfigHelper.platform_config(platform: :ios, export_method: params[:export_method], is_ci: is_ci)
+
+        pre_script = ConfigHelper.optional_env('BEFORE_ALL', default: nil)
+        other_action.sh(pre_script) if pre_script
+
+        caller_ws = ENV.fetch('CALLER_WORKSPACE', nil)
+        if caller_ws && params[:check_dependencies] != false
+          check_node_modules(caller_ws)
+          check_pods(File.join(caller_ws, 'ios')) unless params[:skip_pods]
+        end
 
         other_action.setup_ci if ENV['CI']
         other_action.clear_derived_data if ENV['CI']
@@ -120,6 +159,12 @@ module Fastlane
 
       def self.setup_android(params)
         is_ci = other_action.is_ci
+        pre_script = ConfigHelper.optional_env('BEFORE_ALL', default: nil)
+        other_action.sh(pre_script) if pre_script
+
+        caller_ws = ENV.fetch('CALLER_WORKSPACE', nil)
+        check_node_modules(caller_ws) if caller_ws && params[:check_dependencies] != false
+
         config = other_action.ipc_wrapper(
           event_name: 'Environment loading',
           end_event_name: 'Setup Completed',
@@ -161,6 +206,18 @@ module Fastlane
                                        optional: true,
                                        is_string: false,
                                        default_value: true,
+                                       type: Boolean),
+          FastlaneCore::ConfigItem.new(key: :check_dependencies,
+                                       description: 'Check dependencies',
+                                       optional: true,
+                                       is_string: false,
+                                       default_value: true,
+                                       type: Boolean),
+          FastlaneCore::ConfigItem.new(key: :skip_pods,
+                                       description: 'Skip CocoaPods installation',
+                                       optional: true,
+                                       is_string: false,
+                                       default_value: false,
                                        type: Boolean)
         ]
       end

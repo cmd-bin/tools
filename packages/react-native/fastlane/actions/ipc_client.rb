@@ -6,20 +6,72 @@ require 'json'
 module Fastlane
   module Actions
     class IpcClientAction < Action
+      @socket = nil
+      @socket_path = nil
+
       def self.run(params)
-        socket_path = params[:socket_path]
+        socket_path = params[:socket_path] || ENV.fetch('NF_IPC_SOCKET', nil)
         event_name = params[:event_name]
-        payload = params[:payload] || {}
+        payload = (params[:payload] || {}).dup
 
         return unless socket_path && File.exist?(socket_path)
 
+        # Attach active pipeline step if present in environment
+        if ENV['FASTLANE_PIPELINE_STEP'] && !payload.key?(:step)
+          payload[:step] = ENV['FASTLANE_PIPELINE_STEP']
+        end
+
+        message = { event: event_name, payload: payload }
+        send_message(socket_path, message)
+      end
+
+      def self.send_message(socket_path, message_hash)
+        json_line = "#{message_hash.to_json}\n"
+        ensure_socket(socket_path)
+        return unless @socket
+
         begin
-          UNIXSocket.open(socket_path) do |socket|
-            message = { event: event_name, payload: payload }.to_json
-            socket.puts(message)
+          @socket.puts(json_line)
+          @socket.flush
+        rescue Errno::EPIPE, IOError, Errno::ECONNRESET
+          # Socket disconnected; attempt reconnect and retry once
+          close_socket
+          ensure_socket(socket_path)
+          begin
+            if @socket
+              @socket.puts(json_line)
+              @socket.flush
+            end
+          rescue StandardError
+            close_socket
           end
         rescue StandardError
           # Silently fail so we don't break the build if IPC fails
+        end
+      end
+
+      def self.ensure_socket(socket_path)
+        return if @socket && !@socket.closed? && @socket_path == socket_path
+
+        close_socket
+        begin
+          @socket = UNIXSocket.open(socket_path)
+          @socket.sync = true
+          @socket_path = socket_path
+        rescue StandardError
+          @socket = nil
+          @socket_path = nil
+        end
+      end
+
+      def self.close_socket
+        begin
+          @socket&.close unless @socket&.closed?
+        rescue StandardError
+          # Ignore close errors
+        ensure
+          @socket = nil
+          @socket_path = nil
         end
       end
 
@@ -59,4 +111,8 @@ module Fastlane
       end
     end
   end
+end
+
+at_exit do
+  Fastlane::Actions::IpcClientAction.close_socket
 end

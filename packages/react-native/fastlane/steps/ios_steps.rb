@@ -3,10 +3,16 @@
 module Steps
   module IOS
     def ios_prebuild_internal(ctx)
-      latest_testflight_build_number(
-        api_key: ctx[:api_key],
-        app_identifier: ctx[:app_identifier],
-        initial_build_number: 0
+      ipc_wrapper(
+        event_name: "Fetching TestFlight latest build number for #{ctx[:app_identifier]}",
+        end_event_name: 'TestFlight latest build number retrieved',
+        action: -> {
+          latest_testflight_build_number(
+            api_key: ctx[:api_key],
+            app_identifier: ctx[:app_identifier],
+            initial_build_number: 0
+          )
+        }
       )
 
       build_number = lane_context[:LATEST_TESTFLIGHT_BUILD_NUMBER] + 1
@@ -99,7 +105,13 @@ module Steps
       ipc_wrapper(
         event_name: 'Uploading to Testflight',
         end_event_name: 'Uploaded to Testflight',
-        action: -> { upload_to_testflight(testflight_params) }
+        action: -> { upload_to_testflight(testflight_params) },
+        end_payload_proc: ->(_res) {
+          {
+            version: "v#{ctx[:version]}(#{ctx[:build_number]})",
+            console: 'https://appstoreconnect.apple.com/apps'
+          }
+        }
       )
 
       { testflight_params: testflight_params }

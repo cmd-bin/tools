@@ -20,7 +20,6 @@ module Fastlane
 
         $pbxproj_path ||= File.join(config[:project], 'project.pbxproj')
         $pbxproj_backup ||= File.read($pbxproj_path)
-        puts "targets: #{targets}"
         targets.each do |target|
           other_action.update_code_signing_settings(
             path: config[:project],
@@ -34,8 +33,9 @@ module Fastlane
           )
         end
 
-        other_action.ipc_client(event_name: 'Code signing settings updated')
+        other_action.ipc_client(event_name: 'Code signing settings updated', payload: { end: true })
 
+        other_action.ipc_client(event_name: 'Compiling Xcode archive (xcodebuild)', payload: { start: true })
         other_action.build_app(
           workspace: config[:workspace],
           scheme: config[:scheme],
@@ -50,6 +50,7 @@ module Fastlane
           skip_codesigning: false,
           skip_package_ipa: true
         )
+        other_action.ipc_client(event_name: 'Xcode archive compiled', payload: { end: true })
 
         {
           version: version,

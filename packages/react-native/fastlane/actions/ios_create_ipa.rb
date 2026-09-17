@@ -19,6 +19,7 @@ module Fastlane
         version = other_action.get_version_number(xcodeproj: config[:project], target: app_target[:name])
         build_number = other_action.get_build_number(xcodeproj: config[:project])
 
+        other_action.ipc_client(event_name: 'Packaging IPA (xcodebuild)', payload: { start: true })
         other_action.build_app(
           workspace: config[:workspace],
           scheme: config[:scheme],
@@ -41,6 +42,7 @@ module Fastlane
             provisioningProfiles: targets.to_h { |t| [t[:bundle_id], t[:profile_uuid]] }
           }
         )
+        other_action.ipc_client(event_name: 'IPA packaged', payload: { end: true })
 
         {
           version: version,

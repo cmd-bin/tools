@@ -92,11 +92,11 @@ export async function executeFastlane(
     }
 
     timeString = new Date().toTimeString().split(' ')[0];
-    log.info(
-      pc.dim(pc.gray(`(${timeString})`)) +
-        ' ' +
-        '🚀  [Fastlane]: process started',
-    );
+    // log.info(
+    //   pc.dim(pc.gray(`(${timeString})`)) +
+    //     ' ' +
+    //     '🚀  [Fastlane]: process started',
+    // );
     const fastlaneStartTime = performance.now();
 
     await exec('bundle', ['exec', 'fastlane', ...args]);
@@ -106,7 +106,7 @@ export async function executeFastlane(
       pc.dim(pc.gray(`(${timeString})`)) +
         ' ' +
         pc.green(
-          `✅  Fastlane process completed. (${pc.bold(formatDuration(performance.now() - fastlaneStartTime))})`,
+          `✅  Completed. (${pc.bold(formatDuration(performance.now() - fastlaneStartTime))})`,
         ),
     );
   } finally {

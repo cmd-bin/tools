@@ -86,7 +86,13 @@ module Steps
       ipc_wrapper(
         event_name: 'Uploading to Play Store',
         end_event_name: 'Uploaded to Play Store',
-        action: -> { upload_to_play_store(play_store_params) }
+        action: -> { upload_to_play_store(play_store_params) },
+        end_payload_proc: ->(_res) {
+          {
+            version: "v#{ctx[:version_name]}(#{ctx[:new_build_number]})",
+            console: "https://play.google.com/console/developers/app/#{ctx[:app_identifier]}"
+          }
+        }
       )
 
       { play_store_params: play_store_params }

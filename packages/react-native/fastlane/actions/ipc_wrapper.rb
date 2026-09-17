@@ -10,22 +10,27 @@ module Fastlane
         action_proc = params[:action]
         end_payload_proc = params[:end_payload_proc]
 
-        # Başlangıç olayı için payload oluştur ve gönder
+        # Create and send start event payload
         start_payload = payload.dup
         start_payload[:start] = true
+        start_payload[:sub_step] = true
         other_action.ipc_client(event_name: event_name, payload: start_payload)
 
         result = nil
+        success = false
         begin
           if action_proc
             result = action_proc.call
           elsif block_given?
             result = yield
           end
+          success = true
         ensure
-          # İşlem bittiğinde (hata alsa bile) bitiş olayını gönder
+          # Always send completion event even on error
           end_payload = payload.dup
           end_payload[:end] = true
+          end_payload[:sub_step] = true
+          end_payload[:ok] = success
 
           if end_payload_proc && result
             begin

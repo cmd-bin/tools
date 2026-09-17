@@ -4,6 +4,7 @@ import pc from 'picocolors';
 export interface LiveSummarySubItem {
   label: string;
   ok: boolean;
+  timeString?: string;
   meta?: Record<string, string | number | boolean | undefined | null>;
   lines?: string[];
   message?: string;
@@ -69,6 +70,9 @@ export interface LiveSummaryItemState {
   title: string;
   state: LiveSummaryTaskState;
   runningMessage?: string;
+  subStep?: string;
+  subStepTimeString?: string;
+  triggeredAt?: string;
   result?: LiveSummaryTaskResult;
   run?: LiveSummaryTaskRunner;
   enabled: boolean | ((context: any) => boolean);
@@ -77,6 +81,8 @@ export interface LiveSummaryItemState {
 export interface LiveSummaryOptions<TContext = any> {
   /** Optional section title. If omitted, no title line is rendered. */
   title?: string;
+  /** Optional timestamp when title/summary was triggered */
+  titleTriggeredAt?: string;
   /** List of task definitions or titles */
   tasks?: Array<LiveSummaryTaskOptions<TContext> | string>;
   /** Spinner frames used during in-progress tasks. Defaults to ['◒', '◐', '◓', '◑'] */
@@ -85,6 +91,17 @@ export interface LiveSummaryOptions<TContext = any> {
   intervalMs?: number;
   /** Shared context object passed to all task runner functions */
   context?: TContext;
+}
+
+export function getTimeString(): string {
+  return new Date().toTimeString().split(' ')[0];
+}
+
+const TIME_PADDING = '           '; // 11 spaces to preserve icon alignment
+
+function formatTimestamp(timeStr?: string): string {
+  if (!timeStr) return TIME_PADDING;
+  return `${pc.dim(pc.gray(`(${timeStr})`))} `;
 }
 
 const DEFAULT_SPINNER_FRAMES = ['◒', '◐', '◓', '◑'];
@@ -115,7 +132,7 @@ function formatWithGuideBar(lines: string[]): string {
 function appendMeta(
   lines: string[],
   meta?: Record<string, string | number | boolean | undefined | null>,
-  indent = '    ',
+  indent = `${TIME_PADDING}    `,
 ) {
   if (!meta) return;
   for (const [key, value] of Object.entries(meta)) {
@@ -129,42 +146,48 @@ function appendSubItems(lines: string[], subItems?: LiveSummarySubItem[]) {
   if (!subItems || subItems.length === 0) return;
   for (const sub of subItems) {
     const icon = sub.ok ? pc.green('✔') : pc.red('✖');
-    lines.push(pc.dim(`    ${icon} ${sub.label}:`));
+    const hasDetails =
+      (sub.lines && sub.lines.length > 0) ||
+      (sub.meta && Object.keys(sub.meta).length > 0) ||
+      !sub.ok;
+    const colon = hasDetails ? ':' : '';
+    const timePrefix = formatTimestamp(sub.timeString);
+    lines.push(`${timePrefix}    ${icon} ${sub.label}${colon}`);
     for (const line of sub.lines || []) {
-      lines.push(pc.dim(`        ${pc.cyan(line)}`));
+      lines.push(pc.dim(`${TIME_PADDING}        ${pc.cyan(line)}`));
     }
-    appendMeta(lines, sub.meta, '        ');
+    appendMeta(lines, sub.meta, `${TIME_PADDING}        `);
     if (!sub.ok) {
-      if (sub.message) lines.push(pc.dim(pc.yellow(`        ${sub.message}`)));
+      if (sub.message) lines.push(pc.dim(pc.yellow(`${TIME_PADDING}        ${sub.message}`)));
       if (sub.details)
-        lines.push(pc.dim(pc.yellow(`        Details: ${sub.details}`)));
-      if (sub.hint) lines.push(pc.dim(pc.yellow(`        Hint: ${sub.hint}`)));
+        lines.push(pc.dim(pc.yellow(`${TIME_PADDING}        Details: ${sub.details}`)));
+      if (sub.hint) lines.push(pc.dim(pc.yellow(`${TIME_PADDING}        Hint: ${sub.hint}`)));
     }
   }
 }
 
 function appendItemLines(lines: string[], item: LiveSummaryItemState) {
-  const result = item.result;
-  if (!result) return;
+  const result = item.result || { ok: item.state === 'ok' };
+  const timePrefix = formatTimestamp(item.triggeredAt);
 
   if (result.ok) {
     const extra = result.extra ? ` (${result.extra})` : '';
-    lines.push(pc.green(`✔  ${item.title}${extra}`));
+    lines.push(`${timePrefix}${pc.green(`✔  ${item.title}${extra}`)}`);
     appendMeta(lines, result.meta);
     for (const line of result.lines || []) {
-      lines.push(pc.dim(`    ${pc.cyan(line)}`));
+      lines.push(pc.dim(`${TIME_PADDING}    ${pc.cyan(line)}`));
     }
     appendSubItems(lines, result.subItems);
     return;
   }
 
-  lines.push(pc.red(`✖  ${item.title}`));
-  if (result.message) lines.push(`    ${result.message}`);
-  if (result.details) lines.push(`    Details: ${result.details}`);
-  if (result.hint) lines.push(`    Hint: ${result.hint}`);
+  lines.push(`${timePrefix}${pc.red(`✖  ${item.title}`)}`);
+  if (result.message) lines.push(`${TIME_PADDING}    ${result.message}`);
+  if (result.details) lines.push(`${TIME_PADDING}    Details: ${result.details}`);
+  if (result.hint) lines.push(`${TIME_PADDING}    Hint: ${result.hint}`);
   appendMeta(lines, result.meta);
   for (const line of result.lines || []) {
-    lines.push(pc.dim(`    ${pc.cyan(line)}`));
+    lines.push(pc.dim(`${TIME_PADDING}    ${pc.cyan(line)}`));
   }
   appendSubItems(lines, result.subItems);
 }
@@ -173,7 +196,8 @@ function appendItemLines(lines: string[], item: LiveSummaryItemState) {
  * Reusable Live Summary with seamless Clack guide-bar rendering (no closed frame).
  */
 export class LiveSummary<TContext = any> {
-  public readonly title?: string;
+  public title?: string;
+  public titleTriggeredAt?: string;
   public readonly frames: string[];
   public readonly intervalMs: number;
   public readonly context: TContext;
@@ -185,6 +209,9 @@ export class LiveSummary<TContext = any> {
 
   constructor(options: LiveSummaryOptions<TContext> = {}) {
     this.title = options.title;
+    this.titleTriggeredAt =
+      options.titleTriggeredAt ||
+      (options.title ? getTimeString() : undefined);
     this.frames = options.frames || DEFAULT_SPINNER_FRAMES;
     this.intervalMs = options.intervalMs || 80;
     this.context = options.context || ({} as TContext);
@@ -256,6 +283,19 @@ export class LiveSummary<TContext = any> {
   }
 
   /**
+   * Updates the pipeline summary title dynamically.
+   */
+  public setTitle(title: string, triggeredAt?: string): void {
+    this.title = title;
+    if (triggeredAt) {
+      this.titleTriggeredAt = triggeredAt;
+    } else if (!this.titleTriggeredAt) {
+      this.titleTriggeredAt = getTimeString();
+    }
+    this.update();
+  }
+
+  /**
    * Runs an individual task by title or id.
    */
   public async run(
@@ -287,6 +327,9 @@ export class LiveSummary<TContext = any> {
       );
     }
 
+    if (!item.triggeredAt) {
+      item.triggeredAt = getTimeString();
+    }
     item.state = 'running';
     this.update();
 
@@ -356,10 +399,112 @@ export class LiveSummary<TContext = any> {
       (i) => i.id === titleOrId || i.title === titleOrId,
     );
     if (item) {
+      if (!item.triggeredAt) {
+        item.triggeredAt = getTimeString();
+      }
       item.state = 'skipped';
       item.runningMessage = reason;
       this.update();
     }
+  }
+
+  /**
+   * Updates an item's state or properties directly and re-renders.
+   */
+  public updateItem(
+    titleOrId: string,
+    updates: Partial<LiveSummaryItemState>,
+  ): void {
+    const item = this.items.find(
+      (i) => i.id === titleOrId || i.title === titleOrId,
+    );
+    if (!item) return;
+
+    if (
+      updates.state &&
+      updates.state !== 'pending' &&
+      !item.triggeredAt &&
+      !updates.triggeredAt
+    ) {
+      item.triggeredAt = getTimeString();
+    }
+
+    Object.assign(item, updates);
+    this.update();
+  }
+
+  /**
+   * Adds or updates a sub-item under a parent item.
+   */
+  public addOrUpdateSubItem(
+    titleOrId: string,
+    subItem: LiveSummarySubItem,
+  ): void {
+    const item = this.items.find(
+      (i) => i.id === titleOrId || i.title === titleOrId,
+    );
+    if (!item) return;
+
+    if (!subItem.timeString) {
+      subItem.timeString = getTimeString();
+    }
+
+    if (!item.result) {
+      item.result = { ok: true, subItems: [] };
+    }
+    if (!item.result.subItems) {
+      item.result.subItems = [];
+    }
+
+    const existingIdx = item.result.subItems.findIndex(
+      (s) => s.label === subItem.label,
+    );
+    if (existingIdx >= 0) {
+      item.result.subItems[existingIdx] = {
+        ...item.result.subItems[existingIdx],
+        ...subItem,
+      };
+    } else {
+      item.result.subItems.push(subItem);
+    }
+
+    this.update();
+  }
+
+  /**
+   * Sets the active in-progress sub-step message for an item.
+   */
+  public setSubStep(titleOrId: string, subStepMessage?: string): void {
+    const item = this.items.find(
+      (i) => i.id === titleOrId || i.title === titleOrId,
+    );
+    if (!item) return;
+
+    item.subStep = subStepMessage;
+    item.subStepTimeString = subStepMessage ? getTimeString() : undefined;
+    this.update();
+  }
+
+  /**
+   * Merges metadata key-values into an item's result.
+   */
+  public setMeta(
+    titleOrId: string,
+    meta: Record<string, string | number | boolean | undefined | null>,
+  ): void {
+    const item = this.items.find(
+      (i) => i.id === titleOrId || i.title === titleOrId,
+    );
+    if (!item) return;
+
+    if (!item.result) {
+      item.result = { ok: true, meta: {} };
+    }
+    item.result.meta = {
+      ...(item.result.meta || {}),
+      ...meta,
+    };
+    this.update();
   }
 
   /**
@@ -428,17 +573,33 @@ export class LiveSummary<TContext = any> {
 
     for (const item of this.items) {
       if (item.state === 'pending') {
-        lines.push(pc.dim(`○  ${item.title}`));
+        const timePrefix = formatTimestamp(item.triggeredAt);
+        lines.push(`${timePrefix}${pc.dim(`○  ${item.title}`)}`);
       } else if (item.state === 'running') {
+        const timePrefix = formatTimestamp(item.triggeredAt || getTimeString());
         const detail = item.runningMessage
           ? pc.dim(` (${item.runningMessage})`)
-          : pc.dim(' (checking...)');
-        lines.push(`${spinnerIcon}  ${item.title}${detail}`);
+          : '';
+        lines.push(`${timePrefix}${spinnerIcon}  ${item.title}${detail}`);
+        if (item.result) {
+          appendMeta(lines, item.result.meta);
+          for (const line of item.result.lines || []) {
+            lines.push(pc.dim(`${TIME_PADDING}    ${pc.cyan(line)}`));
+          }
+          appendSubItems(lines, item.result.subItems);
+        }
+        if (item.subStep) {
+          const subStepTime = formatTimestamp(
+            item.subStepTimeString || item.triggeredAt || getTimeString(),
+          );
+          lines.push(`${subStepTime}    ${spinnerIcon} ${item.subStep}`);
+        }
       } else if (item.state === 'skipped') {
+        const timePrefix = formatTimestamp(item.triggeredAt);
         const detail = item.runningMessage
           ? ` (${item.runningMessage})`
           : ' (skipped)';
-        lines.push(pc.dim(`⊘  ${item.title}${detail}`));
+        lines.push(`${timePrefix}${pc.dim(`⊘  ${item.title}${detail}`)}`);
       } else {
         appendItemLines(lines, item);
       }
@@ -453,7 +614,11 @@ export class LiveSummary<TContext = any> {
   public buildContent(): string {
     const formatted = formatWithGuideBar(this.buildLines());
     if (this.title) {
-      return `${pc.cyan('◇')}  ${pc.bold(this.title)}\n${pc.gray('│')}\n${formatted}`;
+      if (!this.titleTriggeredAt) {
+        this.titleTriggeredAt = getTimeString();
+      }
+      const timePrefix = `${pc.dim(pc.gray(`(${this.titleTriggeredAt})`))} `;
+      return `${pc.gray('│')}\n${pc.cyan('◇')}  ${timePrefix}${pc.bold(this.title)}\n${pc.gray('│')}\n${formatted}`;
     }
     return formatted;
   }

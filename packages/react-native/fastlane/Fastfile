@@ -22,55 +22,37 @@ end
 platform :ios do
   desc 'Push a new build to TestFlight'
 
-  before_all do |lane|
-    pre_script = ConfigHelper.optional_env('BEFORE_ALL', default: nil)
-    sh(pre_script) if pre_script
-    Dir.chdir(ENV.fetch('CALLER_WORKSPACE', nil)) do
-      # "npm ls" başarılıysa (0 dönerse) sistem zaten güncel demektir.
-      ipc_client(event_name: 'Node modules are checking', payload: { id: 0, start: true })
-      if system('npm ls > /dev/null 2>&1')
-        ipc_client(event_name: 'Node modules are up to date', payload: { id: 0, end: true })
-      else
-        ipc_client(event_name: 'Node modules are installing', payload: { id: 0 })
-        sh('npm ci')
-        ipc_client(event_name: 'Node modules are installed', payload: { id: 0, end: true })
-      end
-    end
-    if lane != :pod
-      Dir.chdir(File.join(ENV.fetch('CALLER_WORKSPACE', nil), 'ios')) do
-        ipc_client(event_name: 'Pods are checking', payload: { start: true })
-        if system('cmp -s Podfile.lock Pods/Manifest.lock')
-          ipc_client(event_name: 'Pods are up to date', payload: { end: true })
-        else
-          ipc_client(event_name: 'Pods are installing')
-          sh('bundle exec pod install')
-          ipc_client(event_name: 'Pods are installed', payload: { end: true })
-        end
-      end
-    end
-  end
-
   lane :pod do |options|
-    setup(
-      export_method: options[:export_method] || 'app-store',
-      run_match: false,
-      need_target_list: false,
-      need_api_key: false
-    )
     update = options[:update] || false
-    ipc_wrapper(
-      event_name: "Installing pods#{' with repo-update' if update}",
-      end_event_name: 'Pods Installed',
-      action: proc do
-        Dir.chdir(File.join(ENV.fetch('CALLER_WORKSPACE', nil), 'ios')) do
-          sh("bundle exec pod install #{'--repo-update' if update}")
-        end
-      end
+    pipeline(
+      title: 'iOS Pod Pipeline',
+      steps: %i[setup install],
+      setup: -> {
+        setup(
+          export_method: options[:export_method] || 'app-store',
+          run_match: false,
+          need_target_list: false,
+          need_api_key: false,
+          skip_pods: true
+        )
+      },
+      install: -> {
+        ipc_wrapper(
+          event_name: "Installing pods#{' with repo-update' if update}",
+          end_event_name: 'Pods installed',
+          action: proc do
+            Dir.chdir(File.join(ENV.fetch('CALLER_WORKSPACE', nil), 'ios')) do
+              sh("bundle exec pod install #{'--repo-update' if update}")
+            end
+          end
+        )
+      }
     )
   end
 
   lane :internal do |options|
     pipeline(
+      title: 'iOS Internal Pipeline',
       setup: -> { setup(export_method: options[:export_method] || 'app-store') },
       prebuild: ->(ctx) { ios_prebuild_internal(ctx) },
       build: ->(ctx) { ios_build(ctx) },
@@ -83,6 +65,7 @@ platform :ios do
 
   lane :adhoc do |options|
     pipeline(
+      title: 'iOS AdHoc Pipeline',
       setup: -> { setup(export_method: options[:export_method] || 'ad-hoc') },
       prebuild: ->(ctx) { ios_prebuild_adhoc(ctx) },
       build: ->(ctx) { ios_build(ctx) },
@@ -97,24 +80,9 @@ end
 platform :android do
   desc 'Push a new build to Firebase App Distribution'
 
-  before_all do
-    pre_script = ConfigHelper.optional_env('BEFORE_ALL', default: nil)
-    sh(pre_script) if pre_script
-    Dir.chdir(ENV.fetch('CALLER_WORKSPACE', nil)) do
-      # "npm ls" başarılıysa (0 dönerse) sistem zaten güncel demektir.
-      ipc_client(event_name: 'Node modules are checking', payload: { id: 0, start: true })
-      if system('npm ls > /dev/null 2>&1')
-        ipc_client(event_name: 'Node modules are up to date', payload: { id: 0, end: true })
-      else
-        ipc_client(event_name: 'Node modules are installing', payload: { id: 0 })
-        sh('npm ci')
-        ipc_client(event_name: 'Node modules are installed', payload: { id: 0, end: true })
-      end
-    end
-  end
-
   lane :internal do |options|
     pipeline(
+      title: 'Android Internal Pipeline',
       setup: -> { setup(export_method: options[:export_method] || 'aab') },
       prebuild: ->(ctx) { android_prebuild_internal(ctx) },
       build: ->(ctx) { android_build(ctx) },
@@ -127,6 +95,7 @@ platform :android do
 
   lane :adhoc do |options|
     pipeline(
+      title: 'Android AdHoc Pipeline',
       setup: -> { setup(export_method: options[:export_method] || 'apk') },
       prebuild: ->(ctx) { android_prebuild_adhoc(ctx) },
       build: ->(ctx) { android_build(ctx) },

@@ -11,6 +11,11 @@ module Fastlane
         result = other_action.setup(export_method: export_method)
         config = result[:config]
 
+        other_action.ipc_client(
+          event_name: "Compiling #{config[:export_method].upcase} (Gradle)",
+          payload: { start: true }
+        )
+
         other_action.gradle(
           task: config[:task],
           build_type: config[:build_type],
@@ -31,7 +36,10 @@ module Fastlane
           }
         )
 
-        other_action.ipc_client(event_name: "Created #{config[:export_method].upcase} file")
+        other_action.ipc_client(
+          event_name: "Created #{config[:export_method].upcase} file",
+          payload: { end: true }
+        )
       end
 
       def self.description
