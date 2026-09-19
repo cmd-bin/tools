@@ -1,3 +1,13 @@
+## 1.11.1 (2026-09-19)
+
+### 🩹 Fixes
+
+- **deps:** pin @expo/plist to resolve npm EOVERRIDE conflict ([3ff2f31](https://github.com/cmd-bin/tools/commit/3ff2f31))
+
+### ❤️ Thank You
+
+- Orkun Tumer @tumerorkun
+
 ## 1.11.0 (2026-09-19)
 
 ### 🚀 Features

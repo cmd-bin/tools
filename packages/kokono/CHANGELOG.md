@@ -1,3 +1,7 @@
+## 1.10.1 (2026-09-19)
+
+This was a version bump only for @cmd-bin/kokono to align it with other projects, there were no code changes.
+
 ## 1.10.0 (2026-09-19)
 
 This was a version bump only for @cmd-bin/kokono to align it with other projects, there were no code changes.
