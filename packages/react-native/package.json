@@ -23,7 +23,7 @@
   "dependencies": {
     "@bacons/xcode": "^1.0.0-alpha.33",
     "@clack/prompts": "^1.8.0",
-    "@expo/plist": "^0.9.0",
+    "@expo/plist": "0.9.0",
     "cac": "^7.0.0",
     "dotenv": "^17.4.2",
     "picocolors": "^1.1.1"
