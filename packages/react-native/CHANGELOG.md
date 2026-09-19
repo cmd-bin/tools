@@ -1,3 +1,16 @@
+## 1.11.0 (2026-09-19)
+
+### 🚀 Features
+
+- **react-native:** introduce taskLogger for Fastlane IPC and modernize event lifecycle - Implement @clack/prompts taskLog integration via createTaskLogger with   standalone fallback support - Centralize pipeline step lifecycle (start/end) exclusively within   pipeline.rb - Add structured meta and list payload reporting for Fastlane actions   and steps - Remove obsolete sub_step, start, and end flags across Fastlane actions - Modularize core domain logic into src/core (clean, init, ipc,   pipeline, task) ([acb2d6d](https://github.com/cmd-bin/tools/commit/acb2d6d))
+- pod command as pipeline ([711aee4](https://github.com/cmd-bin/tools/commit/711aee4))
+- adds troubleshoot command to check env ([893fb65](https://github.com/cmd-bin/tools/commit/893fb65))
+- adds env_resolutions to maintain env from single point ([6cdef39](https://github.com/cmd-bin/tools/commit/6cdef39))
+
+### ❤️ Thank You
+
+- Orkun Tumer @tumerorkun
+
 ## 1.10.0 (2026-09-09)
 
 ### 🚀 Features
