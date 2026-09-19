@@ -12,8 +12,7 @@ module Fastlane
         config = result[:config]
 
         other_action.ipc_client(
-          event_name: "Compiling #{config[:export_method].upcase} (Gradle)",
-          payload: { start: true }
+          event_name: "Compiling #{config[:export_method].upcase}"
         )
 
         other_action.gradle(
@@ -37,8 +36,7 @@ module Fastlane
         )
 
         other_action.ipc_client(
-          event_name: "Created #{config[:export_method].upcase} file",
-          payload: { end: true }
+          event_name: "Created #{config[:export_method].upcase} file"
         )
       end
 

@@ -104,9 +104,9 @@ module Steps
         action: -> { firebase_app_distribution(params) },
         end_payload_proc: ->(res) {
           {
-            download: res[:binaryDownloadUri],
-            console: res[:firebaseConsoleUri],
-            testing: res[:testingUri],
+            # download: res[:binaryDownloadUri],
+            # console: res[:firebaseConsoleUri],
+            # testing: res[:testingUri],
             createdAt: res[:createTime],
             updatedAt: res[:updateTime],
             expireAt: res[:expireTime],

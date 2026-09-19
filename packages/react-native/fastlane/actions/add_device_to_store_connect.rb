@@ -9,7 +9,7 @@ module Fastlane
 
         result = other_action.setup(export_method: 'app-store', run_match: false)
         config = result[:config]
-        other_action.ipc_client(event_name: 'Adding Device', payload: { start: true })
+        other_action.ipc_client(event_name: 'Adding Device')
         other_action.register_device(
           name: params[:device_name],
           udid: params[:udid],
@@ -17,7 +17,7 @@ module Fastlane
           team_id: config[:team_id],
           username: config[:match_username]
         )
-        other_action.ipc_client(event_name: 'Added Device', payload: { end: true })
+        other_action.ipc_client(event_name: 'Added Device')
       end
 
       def self.description

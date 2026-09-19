@@ -1,18 +1,17 @@
 import { type CAC } from 'cac';
-import { log } from '@clack/prompts';
+import { setTimeout as sleep } from 'node:timers/promises';
+import { log, stream } from '@clack/prompts';
+import { taskLog } from '@clack/prompts';
 import { getRuntime } from '../../utils/runtime.js';
 import pkg from '../../../package.json' with { type: 'json' };
 import { exampleLog, descriptionLog } from '../../utils/logger.js';
 
 export const status = (cli: CAC) => {
-  const commandHandler = (): void => {
-    log.message(`${cli.name} is active.`, { symbol: '✅' });
-    log.message(`Version: ${pkg.version}`, { symbol: '🚀', spacing: 0 });
-    log.message(`Author: ${pkg.author || 'cmd-bin'}`, {
-      symbol: '👤',
-      spacing: 0,
-    });
-    log.message(`Runtime: ${getRuntime()}`, { symbol: '🛠️ ', spacing: 0 });
+  const commandHandler = async (): Promise<void> => {
+    log.success(`${cli.name} is active.`);
+    log.info(`Version: ${pkg.version}`, {spacing: 0});
+    log.info(`Author: ${pkg.author || 'cmd-bin'}`, {spacing: 0});
+    log.info(`Runtime: ${getRuntime()}`, {spacing: 0});
   };
 
   cli

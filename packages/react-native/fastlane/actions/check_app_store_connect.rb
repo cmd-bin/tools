@@ -19,8 +19,7 @@ module Fastlane
         end
 
         other_action.ipc_client(
-          event_name: "Fetching TestFlight latest build number for #{app_identifier}",
-          payload: { start: true }
+          event_name: "Fetching TestFlight latest build number for #{app_identifier}"
         )
 
         other_action.latest_testflight_build_number(
@@ -35,7 +34,6 @@ module Fastlane
         other_action.ipc_client(
           event_name: "TestFlight build info retrieved for #{app_identifier}",
           payload: {
-            end: true,
             list: [
               {
                 app_identifier: app_identifier,

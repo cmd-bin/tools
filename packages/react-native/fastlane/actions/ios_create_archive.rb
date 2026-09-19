@@ -33,9 +33,9 @@ module Fastlane
           )
         end
 
-        other_action.ipc_client(event_name: 'Code signing settings updated', payload: { end: true })
+        other_action.ipc_client(event_name: 'Code signing settings updated')
 
-        other_action.ipc_client(event_name: 'Compiling Xcode archive (xcodebuild)', payload: { start: true })
+        other_action.ipc_client(event_name: 'Compiling Xcode archive')
         other_action.build_app(
           workspace: config[:workspace],
           scheme: config[:scheme],
@@ -50,7 +50,7 @@ module Fastlane
           skip_codesigning: false,
           skip_package_ipa: true
         )
-        other_action.ipc_client(event_name: 'Xcode archive compiled', payload: { end: true })
+        other_action.ipc_client(event_name: 'Xcode archive compiled')
 
         {
           version: version,

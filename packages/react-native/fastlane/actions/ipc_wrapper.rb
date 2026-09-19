@@ -5,56 +5,54 @@ module Fastlane
     class IpcWrapperAction < Action
       def self.run(params)
         event_name = params[:event_name]
-        end_event_name = params[:end_event_name] || event_name
         payload = params[:payload] || {}
         action_proc = params[:action]
         end_payload_proc = params[:end_payload_proc]
 
-        # Create and send start event payload
-        start_payload = payload.dup
-        start_payload[:start] = true
-        start_payload[:sub_step] = true
-        other_action.ipc_client(event_name: event_name, payload: start_payload)
+        # Send simple informational message event
+        other_action.ipc_client(event_name: event_name, payload: payload)
 
         result = nil
-        success = false
         begin
           if action_proc
             result = action_proc.call
           elsif block_given?
             result = yield
           end
-          success = true
         ensure
-          # Always send completion event even on error
-          end_payload = payload.dup
-          end_payload[:end] = true
-          end_payload[:sub_step] = true
-          end_payload[:ok] = success
-
-          if end_payload_proc && result
-            begin
-              dynamic_payload = end_payload_proc.call(result)
-              end_payload.merge!(dynamic_payload) if dynamic_payload.is_a?(Hash)
-            rescue StandardError => e
-              UI.error("Error in end_payload_proc: #{e.message}")
+          if params[:end_event_name]
+            end_payload = {}
+            if end_payload_proc && result
+              begin
+                dynamic_payload = end_payload_proc.call(result)
+                if dynamic_payload.is_a?(Hash)
+                  if dynamic_payload.key?(:list) || dynamic_payload.key?('list')
+                    end_payload = payload.merge(dynamic_payload)
+                  elsif dynamic_payload.key?(:meta) || dynamic_payload.key?('meta')
+                    end_payload = payload.merge(dynamic_payload)
+                  else
+                    end_payload = payload.merge({ meta: dynamic_payload })
+                  end
+                end
+              rescue StandardError => e
+                UI.error("Error in end_payload_proc: #{e.message}")
+              end
             end
+            other_action.ipc_client(event_name: params[:end_event_name], payload: end_payload)
           end
-
-          other_action.ipc_client(event_name: end_event_name, payload: end_payload)
         end
 
         result
       end
 
       def self.description
-        'Wraps an action block/proc with IPC start and end events'
+        'Executes an action block and sends IPC message event'
       end
 
       def self.available_options
         [
           FastlaneCore::ConfigItem.new(key: :event_name,
-                                       description: 'Name of the event',
+                                       description: 'Name of the event message',
                                        optional: false,
                                        type: String),
           FastlaneCore::ConfigItem.new(key: :end_event_name,
@@ -72,7 +70,7 @@ module Fastlane
                                        is_string: false,
                                        type: Proc),
           FastlaneCore::ConfigItem.new(key: :end_payload_proc,
-                                       description: 'Proc to merge block result into end event payload',
+                                       description: 'Proc to extract and send metadata from block result',
                                        optional: true,
                                        is_string: false,
                                        type: Proc)

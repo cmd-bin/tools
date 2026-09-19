@@ -22,9 +22,13 @@ module Fastlane
         context = (params[:context] || {}).dup
         step_names = params[:steps] || STEPS
 
-        active_steps = step_names.select { |s| params[s] }
-        steps_payload = active_steps.map do |s|
-          step_title = case s.to_sym
+        UI.header("Starting #{title}")
+
+        step_names.each do |step_name|
+          action = params[step_name]
+          next unless action
+
+          step_title = case step_name.to_sym
                        when :setup then 'Setup'
                        when :install then 'Install'
                        when :prebuild then 'Prebuild'
@@ -33,27 +37,14 @@ module Fastlane
                        when :prerelease then 'Prerelease'
                        when :release then 'Release'
                        when :postrelease then 'Postrelease'
-                       else s.to_s.split('_').map(&:capitalize).join(' ')
+                       else step_name.to_s.split('_').map(&:capitalize).join(' ')
                        end
-          { id: s.to_s, title: step_title }
-        end
-
-        other_action.ipc_client(
-          event_name: 'pipeline_init',
-          payload: { steps: steps_payload, title: title }
-        )
-
-        UI.header("Starting #{title}")
-
-        step_names.each do |step_name|
-          action = params[step_name]
-          next unless action
 
           UI.message("➡️  [Pipeline] Step: #{step_name}")
           ENV['FASTLANE_PIPELINE_STEP'] = step_name.to_s
           other_action.ipc_client(
             event_name: 'pipeline_step_start',
-            payload: { step: step_name, start: true, title: title, steps: steps_payload }
+            payload: { step: step_name, start: true, title: step_title }
           )
 
           start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
@@ -77,7 +68,7 @@ module Fastlane
             UI.error("❌ [Pipeline] Step failed: #{step_name} - #{e.message}")
             other_action.ipc_client(
               event_name: 'pipeline_step_fail',
-              payload: { step: step_name, error: e.message }
+              payload: { step: step_name, end: true, error: e.message, ok: false }
             )
             raise e
           ensure
@@ -86,10 +77,6 @@ module Fastlane
         end
 
         UI.header("#{title} Finished Successfully")
-        other_action.ipc_client(
-          event_name: 'pipeline_finish',
-          payload: { ok: true }
-        )
         context
       end
 

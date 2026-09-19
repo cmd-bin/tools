@@ -29,13 +29,13 @@ module Fastlane
         return unless workspace_path && File.directory?(workspace_path)
 
         Dir.chdir(workspace_path) do
-          other_action.ipc_client(event_name: 'Checking node modules', payload: { start: true })
+          other_action.ipc_client(event_name: 'Checking node modules')
           if system('npm ls > /dev/null 2>&1')
-            other_action.ipc_client(event_name: 'Node modules are up to date', payload: { end: true })
+            other_action.ipc_client(event_name: 'Node modules are up to date')
           else
-            other_action.ipc_client(event_name: 'Installing node modules', payload: { start: true })
+            other_action.ipc_client(event_name: 'Installing node modules')
             other_action.sh('npm ci')
-            other_action.ipc_client(event_name: 'Node modules installed', payload: { end: true })
+            other_action.ipc_client(event_name: 'Node modules installed')
           end
         end
       end
@@ -44,13 +44,13 @@ module Fastlane
         return unless ios_path && File.directory?(ios_path)
 
         Dir.chdir(ios_path) do
-          other_action.ipc_client(event_name: 'Checking pods', payload: { start: true })
+          other_action.ipc_client(event_name: 'Checking pods')
           if system('cmp -s Podfile.lock Pods/Manifest.lock 2>/dev/null')
-            other_action.ipc_client(event_name: 'Pods are up to date', payload: { end: true })
+            other_action.ipc_client(event_name: 'Pods are up to date')
           else
-            other_action.ipc_client(event_name: 'Installing pods', payload: { start: true })
+            other_action.ipc_client(event_name: 'Installing pods')
             other_action.sh('bundle exec pod install')
-            other_action.ipc_client(event_name: 'Pods installed', payload: { end: true })
+            other_action.ipc_client(event_name: 'Pods installed')
           end
         end
       end

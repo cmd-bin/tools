@@ -97,6 +97,7 @@ export async function ensureRubyEnvironment(
     const currentPath = baseEnv.PATH || process.env.PATH || '';
     return {
       ...baseEnv,
+      rubyBinDir,
       PATH: `${rubyBinDir}${path.delimiter}${currentPath}`,
       MISE_DISABLE: '1', // Prevent mise from hijacking PATH in child shells
     };
@@ -166,6 +167,7 @@ export async function ensureRubyEnvironment(
   const currentPath = baseEnv.PATH || process.env.PATH || '';
   return {
     ...baseEnv,
+    rubyBinDir,
     PATH: `${rubyBinDir}${path.delimiter}${currentPath}`,
     MISE_DISABLE: '1', // Prevent mise from hijacking PATH in child shells
   };

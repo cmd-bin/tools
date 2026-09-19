@@ -47,7 +47,6 @@ module Fastlane
           other_action.ipc_client(
             event_name: "App '#{package_name}' not found on Google Play Console",
             payload: {
-              end: true,
               list: [
                 { 'Status' => 'Not Found', 'Package' => package_name },
                 { 'Action' => 'Create draft at', 'URL' => create_url }

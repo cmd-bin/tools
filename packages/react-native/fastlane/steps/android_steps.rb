@@ -22,6 +22,12 @@ module Steps
         version_code: new_build_number,
         gradle_file: ctx[:app_gradle_file_path]
       )
+      ipc_client(
+        event_name: 'Set Version Code',
+        payload: {
+          meta: { version_code: new_build_number, version_name: version_name }
+        }
+      )
 
       {
         version_name: version_name,
@@ -32,6 +38,7 @@ module Steps
 
     def android_prebuild_adhoc(ctx)
       common_prepare_firebase_tester_group(ctx)
+      ipc_client(event_name: 'Firebase Tester Group prepared')
 
       version_name = android_get_version_name(gradle_file: ctx[:app_gradle_file_path])
 
@@ -46,6 +53,12 @@ module Steps
       android_set_version_code(
         version_code: new_build_number,
         gradle_file: ctx[:app_gradle_file_path]
+      )
+      ipc_client(
+        event_name: 'Set Version Code',
+        payload: {
+          meta: { version_code: new_build_number, version_name: version_name }
+        }
       )
 
       {

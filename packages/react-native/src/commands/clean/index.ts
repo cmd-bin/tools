@@ -1,9 +1,6 @@
 import { type CAC } from 'cac';
-import { clearBuilds } from '../../utils/clear_builds.js';
+import { cleanCore } from '../../core/clean.js';
 import { exampleLog, descriptionLog } from '../../utils/logger.js';
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import os from 'node:os';
 import { log } from '@clack/prompts';
 import { withEnv } from '../../utils/env_resolutions/index.js';
 import pc from 'picocolors';
@@ -45,77 +42,17 @@ export const clean = (cli: CAC) => {
     .action(
       withEnv(async (options) => {
         try {
-          const isDryRun = Boolean(options.dryRun || options['dry-run']);
-          let didSpecificClean = false;
-
-          if (options.vendor) {
-            const env = globalThis._constants.ENV!;
-            let vendorPath = env.BUNDLE_PATH;
-            if (vendorPath.startsWith('~/') || vendorPath === '~') {
-              vendorPath = vendorPath.replace(/^~/, os.homedir());
-            }
-
-            const targetPath = path.resolve(vendorPath, '..');
-            if (isDryRun) {
-              log.info(pc.yellow(`[dry-run] Would delete: ${targetPath}`));
+          await cleanCore(options, (entry) => {
+            if (entry.type === 'warning') {
+              log.info(pc.yellow(entry.message));
+            } else if (entry.type === 'success') {
+              log.success(entry.message);
+            } else if (entry.type === 'error') {
+              log.error(entry.message);
             } else {
-              try {
-                await fs.rm(targetPath, {
-                  recursive: true,
-                  force: true,
-                });
-                log.success(`Vendor bundle cleared: ${vendorPath}`);
-              } catch (e: unknown) {
-                log.error(`Failed to remove vendor bundle: ${vendorPath}`);
-              }
+              log.info(entry.message);
             }
-            didSpecificClean = true;
-          }
-
-          if (options.outputs) {
-            const outputsPath = path.join(
-              os.homedir(),
-              '.cmd-bin',
-              'react-native',
-              'lane-outputs',
-            );
-            if (isDryRun) {
-              log.info(pc.yellow(`[dry-run] Would delete: ${outputsPath}`));
-            } else {
-              try {
-                await fs.rm(outputsPath, { recursive: true, force: true });
-                log.success(`Lane outputs cleared: ${outputsPath}`);
-              } catch (e: unknown) {
-                log.error(`Failed to remove lane outputs: ${outputsPath}`);
-              }
-            }
-            didSpecificClean = true;
-          }
-
-          if (options.derivedData || options['derived-data']) {
-            const derivedDataPath = path.join(
-              os.homedir(),
-              '.cmd-bin',
-              'react-native',
-              'ios',
-              'derived-data',
-            );
-            if (isDryRun) {
-              log.info(pc.yellow(`[dry-run] Would delete: ${derivedDataPath}`));
-            } else {
-              try {
-                await fs.rm(derivedDataPath, { recursive: true, force: true });
-                log.success(`Derived data cleared: ${derivedDataPath}`);
-              } catch (e: unknown) {
-                log.error(`Failed to remove derived data: ${derivedDataPath}`);
-              }
-            }
-            didSpecificClean = true;
-          }
-
-          if (!didSpecificClean) {
-            await clearBuilds(options.platform, process.cwd(), isDryRun);
-          }
+          });
         } catch (e: unknown) {
           if (e instanceof Error) console.error(e.message);
           else console.error(e);

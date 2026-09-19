@@ -21,6 +21,12 @@ module Steps
         skip_info_plist: false,
         build_number: build_number
       )
+      ipc_client(
+        event_name: 'Set Build Number',
+        payload: {
+          meta: { build_number: build_number }
+        }
+      )
 
       app_target = ctx[:targets].find { |t| t[:bundle_id] == ctx[:app_identifier] }
       app_name   = ctx[:app_name] || (app_target && app_target[:name]) || ctx[:scheme]
@@ -36,6 +42,7 @@ module Steps
 
     def ios_prebuild_adhoc(ctx)
       common_prepare_firebase_tester_group(ctx)
+      ipc_client(event_name: 'Firebase Tester Group prepared')
 
       latest_release = firebase_app_distribution_get_latest_release(
         app: ctx[:firebase_app_id],
@@ -48,6 +55,12 @@ module Steps
         xcodeproj: ctx[:project],
         skip_info_plist: false,
         build_number: build_number
+      )
+      ipc_client(
+        event_name: 'Set Build Number',
+        payload: {
+          meta: { build_number: build_number }
+        }
       )
 
       app_target = ctx[:targets].find { |t| t[:bundle_id] == ctx[:app_identifier] }

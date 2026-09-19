@@ -1,6 +1,5 @@
 import path from 'node:path';
 import pkg from '../package.json' with { type: 'json' };
-import { ENV } from './utils/env_resolutions/types.js';
 
 export const GITHUB_REPO_PATTERN =
   /github\.com([\w,-]+)?[:/]([^/]+\/[^/]+?)(?:\.git)?$/;
@@ -16,14 +15,3 @@ globalThis._constants = {
   PACKAGE_NAME: pkg.name,
   ENV: null,
 };
-
-declare global {
-  var _constants: {
-    GITHUB_REPO_PATTERN: typeof GITHUB_REPO_PATTERN;
-    CALLER_WORKSPACE: typeof CALLER_WORKSPACE;
-    FASTLANE_DIR: typeof FASTLANE_DIR;
-    IPC_SERVER_STOP: () => void;
-    PACKAGE_NAME: string;
-    ENV: ENV | null;
-  };
-}
